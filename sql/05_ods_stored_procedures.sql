@@ -171,27 +171,33 @@ BEGIN
             (IIF(QtdBeneficiarios IS NULL OR QtdBeneficiarios < 0, 'NUMERO_INVALIDO', NULL), N'QTD_BENEFICIARIOS', BenRaw),
             (IIF(IGRPublicado IS NULL, 'NUMERO_INVALIDO', NULL), N'IGR', IGRRaw)
         ) v(Regra, Coluna, Valor)
-        WHERE v.Regra IS NOT NULL;
+        WHERE FlErro = 1 AND v.Regra IS NOT NULL;   -- só candidatas: estimativa pequena, sem concessão de memória inflada
 
         DROP TABLE IF EXISTS #val0;
-        SELECT i.*,
+        /* Colunas explícitas (não i.*): o otimizador estima memória pelo tamanho declarado das colunas */
+        SELECT i.NrLinhaArquivo, i.RegistroANS, i.Cobertura, i.Competencia, i.CompetenciaBeneficiario,
+               i.QtdReclamacoes, i.QtdBeneficiarios, i.IGRPublicado, i.PorteOperadora, i.RazaoSocialFonte, i.DtAtualizacao,
+               i.BenRaw, i.IGRRaw, i.PorteRaw,
                SerieIGR = IIF(i.DtAtualizacao IS NULL, 'CONGELADA', 'VIGENTE'),   -- dicionário: data vazia = base congelada
                FlCadastroEncontrado = IIF(o.RegistroANS IS NULL, 0, 1),
                FlIGRDivergente = IIF(i.QtdBeneficiarios > 0
                                      AND ABS(i.IGRPublicado - CAST(i.QtdReclamacoes AS DECIMAL(18,6)) * 100000 / i.QtdBeneficiarios)
-                                         > IIF(i.DtAtualizacao IS NULL, @TolCongelada, @TolVigente), 1, 0),
-               ChaveMetricas = CONCAT(i.QtdReclamacoes, '|', i.QtdBeneficiarios, '|', i.IGRPublicado, '|', i.PorteOperadora, '|', i.CompetenciaBeneficiario)
+                                         > IIF(i.DtAtualizacao IS NULL, @TolCongelada, @TolVigente), 1, 0)
         INTO #val0
         FROM #igr i
         LEFT JOIN ODS.Organizacoes o ON o.RegistroANS = i.RegistroANS
         WHERE i.FlErro = 0;
 
         /* Duplicidade: mais de uma versão das MÉTRICAS no mesmo grão (nome diferente não conta).
-           MIN = MAX da chave de métricas na janela ⇒ versão única (uma passada, sem auto-join) */
+           Versão única ⇔ MIN = MAX de cada métrica na janela (uma passada, sem auto-join, só colunas numéricas) */
         DROP TABLE IF EXISTS #val;
-        SELECT *, QtdVersoesGrao = IIF(MIN(ChaveMetricas) OVER (PARTITION BY RegistroANS, Cobertura, Competencia)
-                                     = MAX(ChaveMetricas) OVER (PARTITION BY RegistroANS, Cobertura, Competencia), 1, 2)
-        INTO #val FROM #val0;
+        SELECT v.*, QtdVersoesGrao = IIF(
+                   MIN(QtdReclamacoes)   OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(QtdReclamacoes)   OVER (PARTITION BY RegistroANS, Cobertura, Competencia) AND
+                   MIN(QtdBeneficiarios) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(QtdBeneficiarios) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) AND
+                   MIN(IGRPublicado)     OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(IGRPublicado)     OVER (PARTITION BY RegistroANS, Cobertura, Competencia) AND
+                   MIN(ISNULL(CompetenciaBeneficiario, '19000101')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(ISNULL(CompetenciaBeneficiario, '19000101')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) AND
+                   MIN(ISNULL(PorteOperadora, N'')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(ISNULL(PorteOperadora, N'')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia), 1, 2)
+        INTO #val FROM #val0 v;
 
         /* Duplicidade conflitante (métricas diferentes) → ERRO em todas as linhas do grão: não há como escolher */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
@@ -219,7 +225,8 @@ BEGIN
             (IIF(QtdBeneficiarios = 0, 'DENOMINADOR_ZERO', NULL), N'QTD_BENEFICIARIOS', BenRaw),
             (IIF(FlIGRDivergente = 1, 'IGR_PUBLICADO_DIVERGENTE', NULL), N'IGR', IGRRaw)
         ) a(Regra, Coluna, Valor)
-        WHERE rn = 1 AND a.Regra IS NOT NULL;
+        WHERE rn = 1 AND (FlCadastroEncontrado = 0 OR PorteOperadora IS NULL OR QtdBeneficiarios = 0 OR FlIGRDivergente = 1)
+          AND a.Regra IS NOT NULL;
 
         TRUNCATE TABLE ODS.IGR;
         INSERT ODS.IGR (RegistroANS, Cobertura, Competencia, CompetenciaBeneficiario, QtdReclamacoes, QtdBeneficiarios, IGRPublicado,
@@ -292,7 +299,7 @@ BEGIN
             (IIF(Numerador > Denominador, 'NUMERADOR_MAIOR_QUE_DENOMINADOR', NULL), N'NR_NUMERADOR', CONCAT(NumRaw, '/', DenRaw)),
             (IIF(VlTRPublicado IS NULL, 'NUMERO_INVALIDO', NULL), N'VL_TR', VlRaw)
         ) v(Regra, Coluna, Valor)
-        WHERE v.Regra IS NOT NULL;
+        WHERE FlErro = 1 AND v.Regra IS NOT NULL;
 
         DROP TABLE IF EXISTS #fin;
         SELECT t.*,
