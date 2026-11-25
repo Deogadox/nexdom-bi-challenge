@@ -6,6 +6,9 @@
      * ALERTA = linha segue para o ODS com flag; ERRO = linha não segue (permanece na STG).
      * Reprocessamento seguro: ODS é reconstruído a partir da STG vigente dentro de uma transação;
        rejeições da mesma execução/tabela são apagadas antes de serem regravadas.
+     * OPTION (MAX_GRANT_PERCENT = 10) nas instruções pesadas: no ambiente de execução o SQL Server
+       tinha só ~313 MB de memória-alvo e as consultas esperavam minutos por concessão de memória
+       (RESOURCE_SEMAPHORE, 684 s acumulados). Com o limite, executam na hora (eventual spill no tempdb).
    Execução: sqlcmd -S localhost -E -b -f 65001 -i sql\05_ods_stored_procedures.sql
    ===================================================================================== */
 USE ANS_BI;
@@ -58,7 +61,7 @@ BEGIN
             FROM STG.ANS_Organizacoes_Canceladas
         ) x
         CROSS APPLY (SELECT TRIM(x.RegistroRaw) AS v) r
-        CROSS APPLY (SELECT TRIM(x.CNPJRaw) AS v) c;
+        CROSS APPLY (SELECT TRIM(x.CNPJRaw) AS v) c OPTION (MAX_GRANT_PERCENT = 10);
 
         SET @Lidas = @@ROWCOUNT;
 
@@ -68,7 +71,7 @@ BEGIN
         FROM #org WHERE RegistroANS IS NULL
         UNION ALL
         SELECT @IdExecucao, 'ODS', TabelaOrigem, NrLinhaArquivo, RegistroRaw, 'CAMPO_OBRIGATORIO_AUSENTE', N'RAZAO_SOCIAL/MODALIDADE', NULL, 'ERRO'
-        FROM #org WHERE RegistroANS IS NOT NULL AND (RazaoSocial IS NULL OR Modalidade IS NULL);
+        FROM #org WHERE RegistroANS IS NOT NULL AND (RazaoSocial IS NULL OR Modalidade IS NULL) OPTION (MAX_GRANT_PERCENT = 10);
 
         /* 3. ALERTAS (linha segue com o campo nulo/flag) */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
@@ -79,19 +82,19 @@ BEGIN
         FROM #org WHERE RegistroANS IS NOT NULL AND DtRegistroANS IS NULL
         UNION ALL
         SELECT @IdExecucao, 'ODS', TabelaOrigem, NrLinhaArquivo, RegistroANS, 'DATA_INVALIDA', N'DATA_DESCREDENCIAMENTO', DtDescRaw, 'ALERTA'
-        FROM #org WHERE Situacao = 'CANCELADA' AND RegistroANS IS NOT NULL AND DtDescredenciamento IS NULL;
+        FROM #org WHERE Situacao = 'CANCELADA' AND RegistroANS IS NOT NULL AND DtDescredenciamento IS NULL OPTION (MAX_GRANT_PERCENT = 10);
 
         /* 4. Deduplicação por registro ANS: ativa prevalece sobre cancelada; depois a 1ª linha do arquivo */
         DROP TABLE IF EXISTS #ok;
         SELECT *, rn = ROW_NUMBER() OVER (PARTITION BY RegistroANS ORDER BY Prioridade, NrLinhaArquivo)
         INTO #ok
-        FROM #org WHERE RegistroANS IS NOT NULL AND RazaoSocial IS NOT NULL AND Modalidade IS NOT NULL;
+        FROM #org WHERE RegistroANS IS NOT NULL AND RazaoSocial IS NOT NULL AND Modalidade IS NOT NULL OPTION (MAX_GRANT_PERCENT = 10);
 
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
         SELECT @IdExecucao, 'ODS', TabelaOrigem, NrLinhaArquivo, RegistroANS, 'DUPLICIDADE_DESCARTADA', N'REGISTRO_OPERADORA',
                CONCAT(N'Mantida versão ', (SELECT k.Situacao FROM #ok k WHERE k.RegistroANS = o.RegistroANS AND k.rn = 1)),
                'ALERTA'
-        FROM #ok o WHERE rn > 1;
+        FROM #ok o WHERE rn > 1 OPTION (MAX_GRANT_PERCENT = 10);
 
         /* 5. Carga */
         TRUNCATE TABLE ODS.Organizacoes;
@@ -99,7 +102,7 @@ BEGIN
                                  DtRegistroANS, DtDescredenciamento, MotivoDescredenciamento, Situacao, TabelaOrigem, NrLinhaArquivo, IdExecucaoODS)
         SELECT RegistroANS, CNPJ, RazaoSocial, NomeFantasia, Modalidade, UF, Cidade, RegiaoComercializacao,
                DtRegistroANS, DtDescredenciamento, MotivoDescredenciamento, Situacao, TabelaOrigem, NrLinhaArquivo, @IdExecucao
-        FROM #ok WHERE rn = 1;
+        FROM #ok WHERE rn = 1 OPTION (MAX_GRANT_PERCENT = 10);
         SET @Inseridas = @@ROWCOUNT;
         SET @Rejeitadas = @Lidas - @Inseridas;
         COMMIT;
@@ -153,7 +156,7 @@ BEGIN
                 FlErro = CAST(0 AS BIT)
         INTO #igr
         FROM STG.ANS_IGR s
-        CROSS APPLY (SELECT TRIM(s.REGISTRO_OPERADORA) AS v) r;
+        CROSS APPLY (SELECT TRIM(s.REGISTRO_OPERADORA) AS v) r OPTION (MAX_GRANT_PERCENT = 10);
         SET @Lidas = @@ROWCOUNT;
         UPDATE #igr SET FlErro = 1
         WHERE RegistroANS IS NULL OR Cobertura IS NULL OR Competencia IS NULL OR IGRPublicado IS NULL
@@ -171,7 +174,7 @@ BEGIN
             (IIF(QtdBeneficiarios IS NULL OR QtdBeneficiarios < 0, 'NUMERO_INVALIDO', NULL), N'QTD_BENEFICIARIOS', BenRaw),
             (IIF(IGRPublicado IS NULL, 'NUMERO_INVALIDO', NULL), N'IGR', IGRRaw)
         ) v(Regra, Coluna, Valor)
-        WHERE FlErro = 1 AND v.Regra IS NOT NULL;   -- só candidatas: estimativa pequena, sem concessão de memória inflada
+        WHERE FlErro = 1 AND v.Regra IS NOT NULL OPTION (MAX_GRANT_PERCENT = 10);   -- só candidatas: estimativa pequena, sem concessão de memória inflada
 
         DROP TABLE IF EXISTS #val0;
         /* Colunas explícitas (não i.*): o otimizador estima memória pelo tamanho declarado das colunas */
@@ -186,7 +189,7 @@ BEGIN
         INTO #val0
         FROM #igr i
         LEFT JOIN ODS.Organizacoes o ON o.RegistroANS = i.RegistroANS
-        WHERE i.FlErro = 0;
+        WHERE i.FlErro = 0 OPTION (MAX_GRANT_PERCENT = 10);
 
         /* Duplicidade: mais de uma versão das MÉTRICAS no mesmo grão (nome diferente não conta).
            Versão única ⇔ MIN = MAX de cada métrica na janela (uma passada, sem auto-join, só colunas numéricas) */
@@ -197,23 +200,23 @@ BEGIN
                    MIN(IGRPublicado)     OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(IGRPublicado)     OVER (PARTITION BY RegistroANS, Cobertura, Competencia) AND
                    MIN(ISNULL(CompetenciaBeneficiario, '19000101')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(ISNULL(CompetenciaBeneficiario, '19000101')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) AND
                    MIN(ISNULL(PorteOperadora, N'')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia) = MAX(ISNULL(PorteOperadora, N'')) OVER (PARTITION BY RegistroANS, Cobertura, Competencia), 1, 2)
-        INTO #val FROM #val0 v;
+        INTO #val FROM #val0 v OPTION (MAX_GRANT_PERCENT = 10);
 
         /* Duplicidade conflitante (métricas diferentes) → ERRO em todas as linhas do grão: não há como escolher */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
         SELECT @IdExecucao, 'ODS', N'STG.ANS_IGR', NrLinhaArquivo, CONCAT(RegistroANS, '|', Cobertura, '|', Competencia),
                'DUPLICIDADE_CONFLITANTE', NULL, CONCAT(QtdReclamacoes, '|', QtdBeneficiarios, '|', IGRPublicado), 'ERRO'
-        FROM #val WHERE QtdVersoesGrao > 1;
+        FROM #val WHERE QtdVersoesGrao > 1 OPTION (MAX_GRANT_PERCENT = 10);
 
         DROP TABLE IF EXISTS #fin;
         SELECT *, rn = ROW_NUMBER() OVER (PARTITION BY RegistroANS, Cobertura, Competencia ORDER BY NrLinhaArquivo)
-        INTO #fin FROM #val WHERE QtdVersoesGrao = 1;
+        INTO #fin FROM #val WHERE QtdVersoesGrao = 1 OPTION (MAX_GRANT_PERCENT = 10);
 
         /* Duplicidade idêntica nas métricas → mantém a 1ª linha, registra as demais */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
         SELECT @IdExecucao, 'ODS', N'STG.ANS_IGR', NrLinhaArquivo, CONCAT(RegistroANS, '|', Cobertura, '|', Competencia),
                'DUPLICIDADE_DESCARTADA', N'RAZAO_SOCIAL', RazaoSocialFonte, 'ALERTA'
-        FROM #fin WHERE rn > 1;
+        FROM #fin WHERE rn > 1 OPTION (MAX_GRANT_PERCENT = 10);
 
         /* ALERTAS das linhas que seguem */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
@@ -226,14 +229,14 @@ BEGIN
             (IIF(FlIGRDivergente = 1, 'IGR_PUBLICADO_DIVERGENTE', NULL), N'IGR', IGRRaw)
         ) a(Regra, Coluna, Valor)
         WHERE rn = 1 AND (FlCadastroEncontrado = 0 OR PorteOperadora IS NULL OR QtdBeneficiarios = 0 OR FlIGRDivergente = 1)
-          AND a.Regra IS NOT NULL;
+          AND a.Regra IS NOT NULL OPTION (MAX_GRANT_PERCENT = 10);
 
         TRUNCATE TABLE ODS.IGR;
         INSERT ODS.IGR (RegistroANS, Cobertura, Competencia, CompetenciaBeneficiario, QtdReclamacoes, QtdBeneficiarios, IGRPublicado,
                         PorteOperadora, RazaoSocialFonte, DtAtualizacao, SerieIGR, FlCadastroEncontrado, FlIGRDivergente, NrLinhaArquivo, IdExecucaoODS)
         SELECT RegistroANS, Cobertura, Competencia, CompetenciaBeneficiario, QtdReclamacoes, QtdBeneficiarios, IGRPublicado,
                PorteOperadora, RazaoSocialFonte, DtAtualizacao, SerieIGR, FlCadastroEncontrado, FlIGRDivergente, NrLinhaArquivo, @IdExecucao
-        FROM #fin WHERE rn = 1;
+        FROM #fin WHERE rn = 1 OPTION (MAX_GRANT_PERCENT = 10);
         SET @Inseridas = @@ROWCOUNT;
         SET @Rejeitadas = @Lidas - @Inseridas;
         COMMIT;
@@ -281,7 +284,7 @@ BEGIN
                 FlErro = CAST(0 AS BIT)
         INTO #tr
         FROM STG.ANS_TR s
-        CROSS APPLY (SELECT TRIM(s.CD_REGISTRO_ANS) AS v) r;
+        CROSS APPLY (SELECT TRIM(s.CD_REGISTRO_ANS) AS v) r OPTION (MAX_GRANT_PERCENT = 10);
         SET @Lidas = @@ROWCOUNT;
         UPDATE #tr SET FlErro = 1
         WHERE RegistroANS IS NULL OR Natureza IS NULL OR Competencia IS NULL OR VlTRPublicado IS NULL
@@ -299,7 +302,7 @@ BEGIN
             (IIF(Numerador > Denominador, 'NUMERADOR_MAIOR_QUE_DENOMINADOR', NULL), N'NR_NUMERADOR', CONCAT(NumRaw, '/', DenRaw)),
             (IIF(VlTRPublicado IS NULL, 'NUMERO_INVALIDO', NULL), N'VL_TR', VlRaw)
         ) v(Regra, Coluna, Valor)
-        WHERE FlErro = 1 AND v.Regra IS NOT NULL;
+        WHERE FlErro = 1 AND v.Regra IS NOT NULL OPTION (MAX_GRANT_PERCENT = 10);
 
         DROP TABLE IF EXISTS #fin;
         SELECT t.*,
@@ -309,13 +312,13 @@ BEGIN
         INTO #fin
         FROM #tr t
         LEFT JOIN ODS.Organizacoes o ON o.RegistroANS = t.RegistroANS
-        WHERE t.FlErro = 0;
+        WHERE t.FlErro = 0 OPTION (MAX_GRANT_PERCENT = 10);
 
         /* Profiling: grão único na TR. Se surgir duplicidade, não há regra segura de escolha → ERRO em todas */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
         SELECT @IdExecucao, 'ODS', N'STG.ANS_TR', NrLinhaArquivo, CONCAT(RegistroANS, '|', Natureza, '|', Competencia),
                'DUPLICIDADE_CONFLITANTE', NULL, CONCAT(Numerador, '/', Denominador), 'ERRO'
-        FROM #fin WHERE Versoes > 1;
+        FROM #fin WHERE Versoes > 1 OPTION (MAX_GRANT_PERCENT = 10);
 
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
         SELECT @IdExecucao, 'ODS', N'STG.ANS_TR', NrLinhaArquivo, CONCAT(RegistroANS, '|', Natureza, '|', Competencia), a.Regra, a.Coluna, a.Valor, 'ALERTA'
@@ -324,14 +327,14 @@ BEGIN
             (IIF(FlCadastroEncontrado = 0, 'REGISTRO_SEM_CADASTRO', NULL), N'CD_REGISTRO_ANS', RegistroANS),
             (IIF(ABS(VlTRPublicado - CAST(Numerador AS DECIMAL(18,6)) * 100 / Denominador) > 0.0051, 'TR_PUBLICADA_DIVERGENTE', NULL), N'VL_TR', VlRaw)
         ) a(Regra, Coluna, Valor)
-        WHERE Versoes = 1 AND a.Regra IS NOT NULL;
+        WHERE Versoes = 1 AND a.Regra IS NOT NULL OPTION (MAX_GRANT_PERCENT = 10);
 
         TRUNCATE TABLE ODS.TR;
         INSERT ODS.TR (RegistroANS, Natureza, Competencia, Numerador, Denominador, VlTRPublicado, RazaoSocialFonte, DtAtualizacao,
                        FlCadastroEncontrado, NrLinhaArquivo, IdExecucaoODS)
         SELECT RegistroANS, Natureza, Competencia, Numerador, Denominador, VlTRPublicado, RazaoSocialFonte, DtAtualizacao,
                FlCadastroEncontrado, NrLinhaArquivo, @IdExecucao
-        FROM #fin WHERE Versoes = 1;
+        FROM #fin WHERE Versoes = 1 OPTION (MAX_GRANT_PERCENT = 10);
         SET @Inseridas = @@ROWCOUNT;
         SET @Rejeitadas = @Lidas - @Inseridas;
         COMMIT;
@@ -382,7 +385,7 @@ BEGIN
                     WHERE TabelaOrigem IN (N'STG.ANS_Organizacoes_Ativas', N'STG.ANS_Organizacoes_Canceladas')
                    UNION ALL SELECT N'IGR', Descartadas FROM desc_ WHERE TabelaOrigem = N'STG.ANS_IGR'
                    UNION ALL SELECT N'TR',  Descartadas FROM desc_ WHERE TabelaOrigem = N'STG.ANS_TR') d
-          ON d.Tabela = t.Tabela;
+          ON d.Tabela = t.Tabela OPTION (MAX_GRANT_PERCENT = 10);
 
         /* R2 — consistência Geral = A + N */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
@@ -392,7 +395,7 @@ BEGIN
         FROM ODS.TR g
         OUTER APPLY (SELECT SUM(x.Numerador) AS Num, SUM(x.Denominador) AS Den FROM ODS.TR x
                      WHERE x.RegistroANS = g.RegistroANS AND x.Competencia = g.Competencia AND x.Natureza <> N'Geral') p
-        WHERE g.Natureza = N'Geral' AND (g.Numerador <> ISNULL(p.Num, 0) OR g.Denominador <> ISNULL(p.Den, 0));
+        WHERE g.Natureza = N'Geral' AND (g.Numerador <> ISNULL(p.Num, 0) OR g.Denominador <> ISNULL(p.Den, 0)) OPTION (MAX_GRANT_PERCENT = 10);
 
         DECLARE @Falhas INT = (SELECT COUNT(*) FROM #rec WHERE Ok = 0);
 
