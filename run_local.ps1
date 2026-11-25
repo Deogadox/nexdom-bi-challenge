@@ -3,7 +3,7 @@
   Uso, na raiz do repositório:
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1            # etapas padrão
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas setup,download,db
-  Etapas: setup | download | profile | db | check | stg | ods | dw | export
+  Etapas: setup | download | profile | db | check | stg | ods | dw | export | analises
   Toda saída vai também para logs\run_local_<data>.log (evidência de execução).
 #>
 param([string[]]$Etapas = @("setup", "download", "profile", "db", "check"))
@@ -51,6 +51,12 @@ try {
         Run "Evidência do DW"             { sqlcmd -S localhost -E -b -I -f 65001 -d ANS_BI -W -s "|" -i sql\checks\dw_resumo.sql -o logs\dw_resumo.txt; Get-Content -Encoding UTF8 logs\dw_resumo.txt }
     }
     if ($Etapas -contains "export")   { Run "Exportação do DW (Parquet)" { & $py -m src.analysis.export_dw } }
+    if ($Etapas -contains "analises") {
+        Run "Exportação do DW (Parquet)"     { & $py -m src.analysis.export_dw }
+        Run "Análises estatísticas"          { & $py -m src.analysis.analises }
+        Run "Tabelas de análise no DW (08)"  { sqlcmd -S localhost -E -b -I -f 65001 -i sql\08_create_analise_tables.sql }
+        Run "Publicação das análises no DW"  { & $py -m src.analysis.publicar_analises }
+    }
     Write-Host "`nOK. Log: $log" -ForegroundColor Green
 }
 catch {
