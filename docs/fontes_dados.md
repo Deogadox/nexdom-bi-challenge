@@ -21,7 +21,7 @@ Base: `https://dadosabertos.ans.gov.br/FTP/PDA/`. O diretório `IGR/` também co
 Formato comum: CSV `;`, textos entre aspas, decimal com vírgula, registro ANS como texto.
 
 **IGR** — `REGISTRO_OPERADORA; RAZAO_SOCIAL; COBERTURA; IGR; QTD_RECLAMACOES; QTD_BENEFICIARIOS; PORTE_OPERADORA; COMPETENCIA; COMPETENCIA_BENEFICIARIO; DT_ATUALIZACAO`
-- Granularidade (hipótese): operadora × cobertura (`Assistência médica` / `Exclusivamente odontológica`) × competência mensal.
+- Granularidade confirmada: operadora × cobertura × competência; 2015-01 → 2019-04 (congelada) e 2021-05 → 2026-10 (viva).
 - Registro com 6 dígitos e zeros à esquerda (`"000515"`).
 - `COMPETENCIA_BENEFICIARIO` = mês anterior à competência das reclamações (ex.: 2026-10 → 2026-09).
 - Traz **porte** (`Pequeno/Médio/Grande`) e **beneficiários** → porte disponível na fonte obrigatória.
