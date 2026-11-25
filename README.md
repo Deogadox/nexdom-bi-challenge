@@ -8,8 +8,8 @@ baixa resolutividade, como porte, reclamações e resolução se relacionam, que
 e como os segmentos se comparam.*
 
 ![Diagrama do processo](docs/img/diagrama_processo.png)
-<sub>Diagrama completo com entradas e saídas de cada etapa: [`docs/diagrama_processo.md`](docs/diagrama_processo.md) ·
-fonte Mermaid [`docs/diagrama_processo.mmd`](docs/diagrama_processo.mmd) · [SVG](docs/img/diagrama_processo.svg)</sub>
+<sub>🔍 **Versão vetorial com zoom:** [`docs/diagramas.md`](docs/diagramas.md) · entradas e saídas de cada etapa:
+[`docs/diagrama_processo.md`](docs/diagrama_processo.md) · fonte [`.mmd`](docs/diagrama_processo.mmd) · [SVG](docs/img/diagrama_processo.svg)</sub>
 
 ---
 
@@ -69,7 +69,8 @@ ANS (FTP PDA) ─► Python: coleta ─► SQL Server ANS_BI: STG ─► ODS ─
 
 ![Arquitetura em camadas — paralelo Medalhão](docs/img/diagrama_medalhao.png)
 <sub>Bronze ≈ STG, Silver ≈ ODS e Gold ≈ DW: objetivo, tabelas, regras e validação de cada camada, com controle
-transversal no schema `CTL`. Explicação em [`docs/arquitetura.md`](docs/arquitetura.md#visão-em-camadas-paralelo-com-a-arquitetura-medalhão).</sub>
+transversal no schema `CTL`. 🔍 Versão vetorial: [`docs/diagramas.md`](docs/diagramas.md) · explicação em
+[`docs/arquitetura.md`](docs/arquitetura.md#visão-em-camadas-paralelo-com-a-arquitetura-medalhão).</sub>
 
 **Modelo dimensional:** `DimOperadora`, `DimSegmento`, `DimTempo`, `DimCobertura`, `DimNatureza`, `DimPorte`,
 **`FatoIGR`** (operadora × cobertura × mês) e **`FatoTR`** (operadora × natureza × mês). Os fatos são separados porque
@@ -209,7 +210,7 @@ Detalhes, testes estatísticos e ressalvas em [`docs/resultados_analises.md`](do
 | Documento | Conteúdo |
 |---|---|
 | [`docs/diagrama_processo.md`](docs/diagrama_processo.md) | fluxo de execução, entradas e saídas de cada etapa |
-| [`docs/diagrama_medalhao.mmd`](docs/diagrama_medalhao.mmd) | arquitetura em camadas (Bronze/Silver/Gold ≈ STG/ODS/DW) |
+| [`docs/diagramas.md`](docs/diagramas.md) | os dois diagramas em versão vetorial (zoom) — camadas Medalhão e processo |
 | [`docs/arquitetura.md`](docs/arquitetura.md) | camadas, responsabilidades, modelo dimensional, controle |
 | [`docs/fontes_dados.md`](docs/fontes_dados.md) | fontes, layouts e metodologias oficiais do IGR e da TR |
 | [`docs/achados_exploracao.md`](docs/achados_exploracao.md) | achados do profiling (períodos, duplicidades, chaves) |

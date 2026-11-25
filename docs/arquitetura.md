@@ -8,7 +8,7 @@ e calcula a estatística sobre o DW pronto. Fluxo completo: [`diagrama_processo.
 ## Visão em camadas (paralelo com a arquitetura Medalhão)
 
 ![Arquitetura em camadas](img/diagrama_medalhao.png)
-<sub>Fonte: [`diagrama_medalhao.mmd`](diagrama_medalhao.mmd) · [SVG](img/diagrama_medalhao.svg)</sub>
+<sub>Fonte: [`diagrama_medalhao.mmd`](diagrama_medalhao.mmd) · [SVG](img/diagrama_medalhao.svg) · 🔍 [versão vetorial](diagramas.md)</sub>
 
 | | 🥉 Bronze ≈ **STG** | 🥈 Silver ≈ **ODS** | 🥇 Gold ≈ **DW** |
 |---|---|---|---|

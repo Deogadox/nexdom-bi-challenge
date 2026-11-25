@@ -1,7 +1,7 @@
 # Diagrama do processo e ordem de execução
 
 Fonte do diagrama: [`diagrama_processo.mmd`](diagrama_processo.mmd) (Mermaid). Versões renderizadas com o
-`mermaid-cli`: [PNG](img/diagrama_processo.png) · [SVG](img/diagrama_processo.svg).
+`mermaid-cli`: [PNG](img/diagrama_processo.png) · [SVG](img/diagrama_processo.svg) · 🔍 [versão vetorial](diagramas.md).
 
 **Legenda de status:**
 - **azul** = implementado e validado com execução real;
