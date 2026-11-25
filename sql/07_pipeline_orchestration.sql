@@ -53,7 +53,8 @@ BEGIN
                      @Mensagem = N'Procedures do DW ainda não criadas (sql/06_dw_stored_procedures.sql).';
             END
             ELSE
-                EXEC (N'EXEC dbo.usp_DW_Carga @IdExecucao = ' + CAST(@IdExecucao AS NVARCHAR(12)));
+                /* dinâmico: o pipeline compila mesmo antes de o DW existir */
+                EXEC sys.sp_executesql N'EXEC dbo.usp_DW_Carga @IdExecucao = @p', N'@p INT', @p = @IdExecucao;
         END
 
         EXEC CTL.usp_FinalizarExecucao @IdExecucao, 'SUCESSO';
