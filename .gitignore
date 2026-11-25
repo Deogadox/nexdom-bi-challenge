@@ -4,6 +4,9 @@ data/raw/**
 data/processed/**
 !data/processed/profiling/
 !data/processed/profiling/profile.json
+!data/processed/analises/
+!data/processed/analises/*.csv
+!data/processed/analises/resultados.json
 logs/
 *.part
 

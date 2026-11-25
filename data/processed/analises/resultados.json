@@ -1,0 +1,357 @@
+{
+  "criterios": {
+    "janela_meses": 12,
+    "min_beneficiarios_medios": 5000,
+    "min_meses_com_dado": 12,
+    "min_demandas_tr": 30,
+    "pesos_indice": {
+      "igr": 0.5,
+      "tr": 0.5
+    },
+    "funil_nivel": 0.998,
+    "z_robusto_limite": 3.5
+  },
+  "R2": {
+    "janela": [
+      "202511",
+      "202610"
+    ],
+    "operadoras_por_cobertura": {
+      "Assistência médica": 679,
+      "Exclusivamente odontológica": 319
+    },
+    "elegiveis_por_cobertura": {
+      "Assistência médica": 511,
+      "Exclusivamente odontológica": 183
+    },
+    "IGR_mercado_Assistência médica": 52.33,
+    "phi_funil_Assistência médica": 66.2,
+    "IGR_mercado_Exclusivamente odontológica": 1.07,
+    "phi_funil_Exclusivamente odontológica": 1.4,
+    "zero_reclamacoes_elegiveis_medico": 3,
+    "zero_reclamacoes_elegiveis_odonto": 70,
+    "outliers_Assistência médica": {
+      "funil_acima": 26,
+      "funil_abaixo": 11,
+      "consistentes_acima": 20,
+      "consistentes_abaixo": 0
+    },
+    "outliers_Exclusivamente odontológica": {
+      "funil_acima": 10,
+      "funil_abaixo": 9,
+      "consistentes_acima": 3,
+      "consistentes_abaixo": 0
+    },
+    "kruskal_porte_medico": {
+      "H": 41.46,
+      "p": 9.916301159054859e-10
+    },
+    "kruskal_segmentos_medico": {
+      "H": 71.35,
+      "p": 1.1771817102781881e-14
+    },
+    "concentracao_medico": {
+      "top10_share_reclamacoes": 0.52,
+      "top10_share_beneficiarios": 0.405,
+      "top10_por_reclamacoes": [
+        {
+          "NomeExibicao": "BRADESCO SAUDE S.A. (005711)",
+          "Reclamacoes": 28331,
+          "BenefMedio": 3284079.5,
+          "IGR": 71.89
+        },
+        {
+          "NomeExibicao": "HAPVIDA NOTREDAME SP/RJ (359017)",
+          "Reclamacoes": 27821,
+          "BenefMedio": 3233393.17,
+          "IGR": 71.7
+        },
+        {
+          "NomeExibicao": "SUL AMERICA COMPANHIA DE SEGURO SAÚDE (006246)",
+          "Reclamacoes": 25379,
+          "BenefMedio": 2385421.08,
+          "IGR": 88.66
+        },
+        {
+          "NomeExibicao": "HAPVIDA (368253)",
+          "Reclamacoes": 23176,
+          "BenefMedio": 4323392.58,
+          "IGR": 44.67
+        },
+        {
+          "NomeExibicao": "AMIL (326305)",
+          "Reclamacoes": 23010,
+          "BenefMedio": 3133664.25,
+          "IGR": 61.19
+        },
+        {
+          "NomeExibicao": "UNIMED CNU (339679)",
+          "Reclamacoes": 11955,
+          "BenefMedio": 1742423.33,
+          "IGR": 57.18
+        },
+        {
+          "NomeExibicao": "UNIMED BH (343889)",
+          "Reclamacoes": 8166,
+          "BenefMedio": 1619731.5,
+          "IGR": 42.01
+        },
+        {
+          "NomeExibicao": "GEAP (323080)",
+          "Reclamacoes": 8137,
+          "BenefMedio": 402326.33,
+          "IGR": 168.54
+        },
+        {
+          "NomeExibicao": "SELECT (358053)",
+          "Reclamacoes": 8094,
+          "BenefMedio": 91226.92,
+          "IGR": 739.37
+        },
+        {
+          "NomeExibicao": "SEGUROS UNIMED (000701)",
+          "Reclamacoes": 6663,
+          "BenefMedio": 987010.08,
+          "IGR": 56.26
+        }
+      ]
+    }
+  },
+  "R1": {
+    "janela": [
+      "201805",
+      "201904"
+    ],
+    "operadoras_com_igr_e_tr": 742,
+    "elegiveis_por_grupo": {
+      "Médico-hospitalar": 211,
+      "Odontológico": 9
+    },
+    "Médico-hospitalar": {
+      "IGR_mediana": 13.77,
+      "TR_mediana": 91.1,
+      "quadrantes": {
+        "IGR alto, TR alta": 56,
+        "IGR baixo, TR baixa": 56,
+        "Referência: IGR baixo e TR alta": 50,
+        "Crítico: IGR alto e TR baixa": 49
+      },
+      "sensibilidade_pesos": {
+        "spearman_50_50_vs_Indice_30_70": 0.929,
+        "spearman_50_50_vs_Indice_70_30": 0.924
+      }
+    },
+    "Odontológico": {
+      "IGR_mediana": 1.1,
+      "TR_mediana": 91.4,
+      "quadrantes": {
+        "Referência: IGR baixo e TR alta": 4,
+        "Crítico: IGR alto e TR baixa": 3,
+        "IGR baixo, TR baixa": 1,
+        "IGR alto, TR alta": 1
+      },
+      "sensibilidade_pesos": {
+        "spearman_50_50_vs_Indice_30_70": 0.95,
+        "spearman_50_50_vs_Indice_70_30": 0.975
+      }
+    }
+  },
+  "temporal": {
+    "tendencia": {
+      "Assistência médica": {
+        "meses": 66,
+        "spearman_tempo_rho": 0.626,
+        "p": 1.8664718445234913e-08,
+        "inclinacao_por_mes": 0.385,
+        "inicio": 31.11,
+        "fim": 60.42
+      },
+      "Exclusivamente odontológica": {
+        "meses": 66,
+        "spearman_tempo_rho": -0.533,
+        "p": 4.1406325480568144e-06,
+        "inclinacao_por_mes": -0.007,
+        "inicio": 1.58,
+        "fim": 1.26
+      },
+      "TR_geral_2015_2019": {
+        "meses": 58,
+        "spearman_tempo_rho": 0.939,
+        "p": 1.2229552980315261e-27,
+        "inicio": 74.9,
+        "fim": 91.3
+      }
+    },
+    "anual_jan_out": [
+      {
+        "Cobertura": "Assistência médica",
+        "Ano": 2022,
+        "Reclamacoes": 179895,
+        "Benef": 498115066,
+        "Meses": 10,
+        "IGR_JanOut": 36.12,
+        "Var_pct": NaN
+      },
+      {
+        "Cobertura": "Assistência médica",
+        "Ano": 2023,
+        "Reclamacoes": 270959,
+        "Benef": 507091422,
+        "Meses": 10,
+        "IGR_JanOut": 53.43,
+        "Var_pct": 47.95
+      },
+      {
+        "Cobertura": "Assistência médica",
+        "Ano": 2024,
+        "Reclamacoes": 304897,
+        "Benef": 513976416,
+        "Meses": 10,
+        "IGR_JanOut": 59.32,
+        "Var_pct": 11.02
+      },
+      {
+        "Cobertura": "Assistência médica",
+        "Ano": 2025,
+        "Reclamacoes": 264378,
+        "Benef": 522323315,
+        "Meses": 10,
+        "IGR_JanOut": 50.62,
+        "Var_pct": -14.68
+      },
+      {
+        "Cobertura": "Assistência médica",
+        "Ano": 2026,
+        "Reclamacoes": 294879,
+        "Benef": 529057499,
+        "Meses": 10,
+        "IGR_JanOut": 55.74,
+        "Var_pct": 10.12
+      },
+      {
+        "Cobertura": "Exclusivamente odontológica",
+        "Ano": 2022,
+        "Reclamacoes": 3504,
+        "Benef": 287544183,
+        "Meses": 10,
+        "IGR_JanOut": 1.22,
+        "Var_pct": NaN
+      },
+      {
+        "Cobertura": "Exclusivamente odontológica",
+        "Ano": 2023,
+        "Reclamacoes": 3899,
+        "Benef": 308707508,
+        "Meses": 10,
+        "IGR_JanOut": 1.26,
+        "Var_pct": 3.64
+      },
+      {
+        "Cobertura": "Exclusivamente odontológica",
+        "Ano": 2024,
+        "Reclamacoes": 4064,
+        "Benef": 332690897,
+        "Meses": 10,
+        "IGR_JanOut": 1.22,
+        "Var_pct": -3.28
+      },
+      {
+        "Cobertura": "Exclusivamente odontológica",
+        "Ano": 2025,
+        "Reclamacoes": 3429,
+        "Benef": 346181160,
+        "Meses": 10,
+        "IGR_JanOut": 0.99,
+        "Var_pct": -18.91
+      },
+      {
+        "Cobertura": "Exclusivamente odontológica",
+        "Ano": 2026,
+        "Reclamacoes": 4114,
+        "Benef": 365275819,
+        "Meses": 10,
+        "IGR_JanOut": 1.13,
+        "Var_pct": 13.7
+      }
+    ]
+  },
+  "correlacoes": [
+    {
+      "Recorte": "R2",
+      "Filtro": "médico, ≥1 mil benef.",
+      "Par": "Beneficiários × Reclamações (absoluto)",
+      "N": 605,
+      "Spearman_rho": 0.815,
+      "Spearman_p": 8.188411469345209e-145,
+      "Pearson_r": 0.838,
+      "Pearson_p": 3.8965349665031604e-161,
+      "Pearson_transf": "log × log"
+    },
+    {
+      "Recorte": "R2",
+      "Filtro": "médico, ≥1 mil benef.",
+      "Par": "Beneficiários × IGR",
+      "N": 605,
+      "Spearman_rho": 0.307,
+      "Spearman_p": 1.1755284962237497e-14,
+      "Pearson_r": 0.321,
+      "Pearson_p": 6.364761270728107e-16,
+      "Pearson_transf": "log × log"
+    },
+    {
+      "Recorte": "R2",
+      "Filtro": "médico, elegíveis (≥5 mil)",
+      "Par": "Beneficiários × IGR",
+      "N": 511,
+      "Spearman_rho": 0.302,
+      "Spearman_p": 3.08995200372902e-12,
+      "Pearson_r": 0.285,
+      "Pearson_p": 5.128047331465994e-11,
+      "Pearson_transf": "log × log"
+    },
+    {
+      "Recorte": "R1",
+      "Filtro": "médico-hospitalar, elegíveis",
+      "Par": "IGR × TR (Geral)",
+      "N": 211,
+      "Spearman_rho": -0.124,
+      "Spearman_p": 0.07275713738981922,
+      "Pearson_r": -0.33,
+      "Pearson_p": 9.581570409587416e-07,
+      "Pearson_transf": "log × linear"
+    },
+    {
+      "Recorte": "R1",
+      "Filtro": "médico-hospitalar, elegíveis",
+      "Par": "Beneficiários × TR (Geral)",
+      "N": 211,
+      "Spearman_rho": 0.105,
+      "Spearman_p": 0.12968882422578498,
+      "Pearson_r": 0.207,
+      "Pearson_p": 0.00251691668861191,
+      "Pearson_transf": "log × linear"
+    },
+    {
+      "Recorte": "R1",
+      "Filtro": "médico-hospitalar, elegíveis",
+      "Par": "Beneficiários × IGR",
+      "N": 211,
+      "Spearman_rho": -0.378,
+      "Spearman_p": 1.47478378600029e-08,
+      "Pearson_r": -0.358,
+      "Pearson_p": 8.721838543958125e-08,
+      "Pearson_transf": "log × log"
+    },
+    {
+      "Recorte": "R1",
+      "Filtro": "médico-hospitalar, elegíveis",
+      "Par": "Demandas NIP × TR (Geral)",
+      "N": 211,
+      "Spearman_rho": -0.026,
+      "Spearman_p": 0.7095894639675717,
+      "Pearson_r": -0.022,
+      "Pearson_p": 0.7536757461994505,
+      "Pearson_transf": "log × linear"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+Recorte,Filtro,Par,N,Spearman_rho,Spearman_p,Pearson_r,Pearson_p,Pearson_transf
+R2,"médico, ≥1 mil benef.",Beneficiários × Reclamações (absoluto),605,0.815,8.188411469345209e-145,0.838,3.8965349665031604e-161,log × log
+R2,"médico, ≥1 mil benef.",Beneficiários × IGR,605,0.307,1.1755284962237497e-14,0.321,6.364761270728107e-16,log × log
+R2,"médico, elegíveis (≥5 mil)",Beneficiários × IGR,511,0.302,3.08995200372902e-12,0.285,5.128047331465994e-11,log × log
+R1,"médico-hospitalar, elegíveis",IGR × TR (Geral),211,-0.124,0.07275713738981922,-0.33,9.581570409587416e-07,log × linear
+R1,"médico-hospitalar, elegíveis",Beneficiários × TR (Geral),211,0.105,0.12968882422578498,0.207,0.00251691668861191,log × linear
+R1,"médico-hospitalar, elegíveis",Beneficiários × IGR,211,-0.378,1.47478378600029e-08,-0.358,8.721838543958125e-08,log × log
+R1,"médico-hospitalar, elegíveis",Demandas NIP × TR (Geral),211,-0.026,0.7095894639675717,-0.022,0.7536757461994505,log × linear
