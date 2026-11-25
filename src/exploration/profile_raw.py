@@ -24,6 +24,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+# Permite rodar tanto "python -m src.x.y" quanto o arquivo direto (ex.: botão Run do VS Code)
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from src.common.ans_csv import normalize_registro, read_ans_csv, snake, to_num
 
 ROOT = Path(__file__).resolve().parents[2]

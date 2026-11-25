@@ -15,6 +15,10 @@ from pathlib import Path
 
 import pandas as pd
 
+# Permite rodar tanto "python -m src.x.y" quanto o arquivo direto (ex.: botão Run do VS Code)
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 ROOT = Path(__file__).resolve().parents[2]
 ANA = ROOT / "data" / "processed" / "analises"
 log = logging.getLogger("publicar_analises")
