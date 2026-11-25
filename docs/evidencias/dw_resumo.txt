@@ -1,0 +1,55 @@
+﻿IdExecucao|Origem|Status|DtInicio|DtFim|Mensagem
+----------|------|------|--------|-----|--------
+7|run_local:dw|SUCESSO|2026-11-25 16:47:19|2026-11-25 16:47:49|NULL
+Etapa|Objeto|Status|LinhasLidas|LinhasInseridas|LinhasAtualizadas|Ms|Mensagem
+-----|------|------|-----------|---------------|-----------------|--|--------
+VERIFICACAO|STG|SUCESSO|NULL|NULL|NULL|63|NULL
+ODS|ODS.Organizacoes|SUCESSO|4186|4186|NULL|113|NULL
+ODS|ODS.IGR|SUCESSO|130155|130136|NULL|2341|NULL
+ODS|ODS.TR|SUCESSO|63366|63366|NULL|6843|NULL
+VALIDACAO|dbo.usp_ODS_Validacao|SUCESSO|NULL|NULL|NULL|176|R1 reconciliação OK; ver CTL.Rejeicao (Etapa VALIDACAO_ODS) para alertas.
+DW|DW.Dim*|SUCESSO|NULL|NULL|NULL|18135|MERGE: DimSegmento, DimOperadora, DimTempo (contagens); domínios fixos sincronizados.
+DW|DW.Fato*|SUCESSO|NULL|193502|NULL|1180|FatoIGR=130136; FatoTR=63366
+VALIDACAO|dbo.usp_DW_Validacao|SUCESSO|NULL|NULL|NULL|260|V1 contagens, V2 somas e V4 operadoras conferem.
+Dimensao|Linhas
+--------|------
+DimOperadora|4187
+DimSegmento|11
+DimTempo|142
+DimCobertura|3
+DimNatureza|4
+DimPorte|4
+Modalidade|Segmento|GrupoAssistencial|FlModalidadeLegada
+----------|--------|-----------------|------------------
+Administradora|Administradora de Benefícios|Administradora|1
+Administradora de Benefícios|Administradora de Benefícios|Administradora|0
+Autogestão|Autogestão|Médico-hospitalar|0
+Cooperativa Médica|Cooperativa Médica|Médico-hospitalar|0
+Filantropia|Filantropia|Médico-hospitalar|0
+Medicina de Grupo|Medicina de Grupo|Médico-hospitalar|0
+Seguradora|Seguradora Especializada em Saúde|Médico-hospitalar|1
+Seguradora Especializada em Saúde|Seguradora Especializada em Saúde|Médico-hospitalar|0
+Não informada|Não informado|Não informado|0
+Cooperativa odontológica|Cooperativa Odontológica|Odontológico|0
+Odontologia de Grupo|Odontologia de Grupo|Odontológico|0
+Fato|Recorte|De|Ate|Linhas|Operadoras|Reclamacoes
+----|-------|--|---|------|----------|-----------
+FatoIGR|CONGELADA|2015-01|2019-04|63247|1294|377045
+FatoIGR|VIGENTE|2021-05|2026-10|66889|1049|1658377
+FatoTR|Geral|2015-01|2019-10|26062|1210|473680
+FatoTR|Assistencial|2015-01|2019-10|22340|1057|327716
+FatoTR|Não Assistencial|2015-01|2019-10|14964|1042|145964
+Segmento|Cobertura|Operadoras|Reclamacoes|IGR_12m
+--------|---------|----------|-----------|-------
+Seguradora Especializada em Saúde|Assistência médica|7|66750|74.25
+Medicina de Grupo|Assistência médica|236|155208|60.82
+Autogestão|Assistência médica|142|26542|49.38
+Cooperativa Médica|Assistência médica|261|89033|39.90
+Filantropia|Assistência médica|33|4298|34.00
+Seguradora Especializada em Saúde|Exclusivamente odontológica|2|695|1.59
+Filantropia|Exclusivamente odontológica|5|18|1.25
+Odontologia de Grupo|Exclusivamente odontológica|140|1652|1.16
+Medicina de Grupo|Exclusivamente odontológica|52|1959|1.06
+Autogestão|Exclusivamente odontológica|23|11|.96
+Cooperativa Médica|Exclusivamente odontológica|8|61|.90
+Cooperativa Odontológica|Exclusivamente odontológica|89|329|.59

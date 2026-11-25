@@ -34,3 +34,19 @@ concessão mínima.
 ## Resultado (execução 5)
 Pipeline STG → ODS completo em **8 s**; `usp_ODS_IGR` caiu de 368 s para **4,3 s**, com as mesmas reconciliações
 (IGR 130.155 = 130.136 + 19 duplicidades). Evidências: `docs/evidencias/`.
+
+## Reincidência (execução 6) e correção de ambiente
+Na primeira carga do DW, `dbo.usp_ODS_Validacao` ficou na fila de memória por uma contagem simples.
+O diagnóstico ao vivo (`sql/checks/em_execucao.sql`, evidência em `docs/evidencias/em_execucao.txt`) mostrou que o
+**semáforo de memória da instância tinha 7 MB no total**, e a consulta pedia 8 MB. Nenhum ajuste de código resolve
+isso: o Windows estava retirando a memória do SQL Server.
+
+Correção aplicada pelo autor na instância (reversível):
+```sql
+EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
+EXEC sp_configure 'min server memory (MB)', 1024;   -- impede que o SO reduza a instância abaixo de 1 GB
+EXEC sp_configure 'max server memory (MB)', 3072;   -- deixa memória para o restante da máquina
+RECONFIGURE;
+```
+Resultado (execução 7): pipeline completo **STG → ODS → DW em 30 s**, com todas as validações OK.
+Os `MAX_GRANT_PERCENT` foram mantidos como proteção em ambientes com pouca memória.

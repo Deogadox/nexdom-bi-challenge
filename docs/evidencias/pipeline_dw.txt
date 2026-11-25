@@ -1,0 +1,28 @@
+﻿IdExecucao = 7
+Checagem|Tabela|STG|ODS|Descartadas|Resultado
+--------|------|---|---|-----------|---------
+R1_RECONCILIACAO|Organizacoes|4186|4186|0|OK
+R1_RECONCILIACAO|TR|63366|63366|0|OK
+R1_RECONCILIACAO|IGR|130155|130136|19|OK
+Checagem|Ocorrencias
+--------|-----------
+R2_TR_GERAL_INCONSISTENTE|0
+Checagem|Base|Registros|ComCadastro
+--------|----|---------|-----------
+R3_COBERTURA_CADASTRO|IGR|1417|1417
+R3_COBERTURA_CADASTRO|TR|1210|1210
+Checagem|Item|ODS|DW|Resultado
+--------|----|---|--|---------
+V1_CONTAGEM|FatoIGR|130136|130136|OK
+V1_CONTAGEM|FatoTR|63366|63366|OK
+V2_SOMA|QtdReclamacoes|2035422|2035422|OK
+V2_SOMA|QtdBeneficiarios|9126310967|9126310967|OK
+V2_SOMA|Numerador|814662|814662|OK
+V2_SOMA|Denominador|947360|947360|OK
+V3_MEMBRO_DESCONHECIDO|FatoIGR|0|0|OK
+V3_MEMBRO_DESCONHECIDO|FatoTR|0|0|OK
+V4_OPERADORAS|ODS.Organizacoes na DimOperadora|4186|4186|OK
+V5_RECORTE|Meses com IGR|NULL|118|INFO
+V5_RECORTE|Meses com TR|NULL|58|INFO
+V5_RECORTE|Janela comum IGR×TR (meses)|NULL|52|INFO
+V5_RECORTE|Meses sem IGR nem TR (lacuna)|NULL|18|INFO

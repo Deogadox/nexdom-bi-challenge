@@ -1,0 +1,14 @@
+﻿session_id|status|command|wait_type|espera_s|decorrido_s|cpu_ms|procedimento|pedida_mb|concedida_mb|ideal_mb|queue_id|wait_order|instrucao
+----------|------|-------|---------|--------|-----------|------|------------|---------|------------|--------|--------|----------|---------
+61|suspended|SELECT|RESOURCE_SEMAPHORE|52|318|17958|usp_ODS_Validacao|8|NULL|8|5|0|SELECT 'R3_COBERTURA_CADASTRO' AS Checagem, Base, Registros, ComCadastro          FROM (SELECT N'IGR' AS Base, COUNT(DISTINCT RegistroANS) AS Registros, COUNT(DISTINCT IIF(FlCadastroEncontrado = 1, Re
+IdExecucao|Etapa|Objeto|Status|DtInicio|DtFim
+----------|-----|------|------|--------|-----
+6|VALIDACAO|dbo.usp_ODS_Validacao|EM_ANDAMENTO|2026-11-25 16:41:52.619|NULL
+6|ODS|ODS.TR|SUCESSO|2026-11-25 16:37:33.366|2026-11-25 16:41:51.921
+6|ODS|ODS.IGR|SUCESSO|2026-11-25 16:37:27.321|2026-11-25 16:37:33.349
+6|ODS|ODS.Organizacoes|SUCESSO|2026-11-25 16:37:27.045|2026-11-25 16:37:27.321
+6|VERIFICACAO|STG|SUCESSO|2026-11-25 16:37:26.796|2026-11-25 16:37:27.026
+5|VALIDACAO|dbo.usp_ODS_Validacao|SUCESSO|2026-11-25 16:31:05.349|2026-11-25 16:31:05.651
+alvo_mb|total_mb|disponivel_mb|grantee_count|waiter_count
+-------|--------|-------------|-------------|------------
+7|7|7|0|1
