@@ -3,7 +3,7 @@
   Uso, na raiz do repositório:
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1            # etapas padrão
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas setup,download,db
-  Etapas: setup | download | profile | db | check | stg | ods | dw
+  Etapas: setup | download | profile | db | check | stg | ods | dw | export
   Toda saída vai também para logs\run_local_<data>.log (evidência de execução).
 #>
 param([string[]]$Etapas = @("setup", "download", "profile", "db", "check"))
@@ -50,6 +50,7 @@ try {
         Run "Pipeline completo"           { sqlcmd -S localhost -E -b -I -f 65001 -d ANS_BI -W -s "|" -Q "EXEC dbo.usp_Pipeline_ANS @Origem = N'run_local:dw'" -o logs\pipeline_dw.txt; Get-Content -Encoding UTF8 logs\pipeline_dw.txt }
         Run "Evidência do DW"             { sqlcmd -S localhost -E -b -I -f 65001 -d ANS_BI -W -s "|" -i sql\checks\dw_resumo.sql -o logs\dw_resumo.txt; Get-Content -Encoding UTF8 logs\dw_resumo.txt }
     }
+    if ($Etapas -contains "export")   { Run "Exportação do DW (Parquet)" { & $py -m src.analysis.export_dw } }
     Write-Host "`nOK. Log: $log" -ForegroundColor Green
 }
 catch {
