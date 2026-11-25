@@ -29,8 +29,10 @@ Implementadas em `sql/05_ods_stored_procedures.sql`. Severidades em `CTL.Rejeica
 - Duplicidade no grão (registro × cobertura × competência):
   - mesmas métricas, nome diferente → mantém a 1ª linha do arquivo; demais: ALERTA `DUPLICIDADE_DESCARTADA`;
   - métricas diferentes → todas as linhas do grão: ERRO `DUPLICIDADE_CONFLITANTE` (não há critério seguro de escolha).
-- `FlIGRDivergente`: |IGR publicado − reclamações/beneficiários×100.000| > 0,0501 (tolerância do arredondamento
-  a 1 casa da série congelada) → ALERTA `IGR_PUBLICADO_DIVERGENTE`. O DW sempre recalcula a taxa.
+- `FlIGRDivergente`: |IGR publicado − reclamações/beneficiários×100.000| acima da tolerância da série →
+  ALERTA `IGR_PUBLICADO_DIVERGENTE`. Tolerâncias: **VIGENTE 0,0051** (publicada com 2 casas) e **CONGELADA 0,06**
+  (publicada com 1 casa; na execução 2 os 810 desvios acima de 0,05 ficaram todos entre 0,050 e 0,055).
+  O DW sempre recalcula a taxa a partir de numerador e denominador.
 - Beneficiários = 0 → ALERTA `DENOMINADOR_ZERO` (linha mantida; taxa indefinida no DW).
 
 ## ODS.TR

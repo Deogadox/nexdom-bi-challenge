@@ -124,8 +124,9 @@ AS
 BEGIN
     SET NOCOUNT ON; SET XACT_ABORT ON;
     DECLARE @IdLog BIGINT, @Lidas INT, @Inseridas INT, @Rejeitadas INT;
-    /* Tolerância de arredondamento: a série congelada foi publicada com 1 casa decimal (erro máx. 0,05) */
-    DECLARE @TolIGR DECIMAL(9,4) = 0.0501;
+    /* Tolerância |publicado − recalculado| por série (evidência em docs/achados_exploracao.md, A4):
+       VIGENTE publicada com 2 casas → 0,0051; CONGELADA publicada com 1 casa, desvio observado ≤ 0,055 → 0,06 */
+    DECLARE @TolVigente DECIMAL(9,4) = 0.0051, @TolCongelada DECIMAL(9,4) = 0.06;
     EXEC CTL.usp_RegistrarEtapa @IdExecucao, 'ODS', N'ODS.IGR', 'EM_ANDAMENTO', @IdLog OUTPUT;
     BEGIN TRY
         BEGIN TRAN;
@@ -148,11 +149,15 @@ BEGIN
                 PorteOperadora = CASE TRIM(s.PORTE_OPERADORA) WHEN N'Pequeno' THEN N'Pequeno' WHEN N'Médio' THEN N'Médio'
                                                              WHEN N'Grande' THEN N'Grande' END,
                 RazaoSocialFonte = NULLIF(TRIM(s.RAZAO_SOCIAL), N''),
-                DtAtualizacao = TRY_CONVERT(DATE, NULLIF(TRIM(s.DT_ATUALIZACAO), N''), 23)
+                DtAtualizacao = TRY_CONVERT(DATE, NULLIF(TRIM(s.DT_ATUALIZACAO), N''), 23),
+                FlErro = CAST(0 AS BIT)
         INTO #igr
         FROM STG.ANS_IGR s
         CROSS APPLY (SELECT TRIM(s.REGISTRO_OPERADORA) AS v) r;
         SET @Lidas = @@ROWCOUNT;
+        UPDATE #igr SET FlErro = 1
+        WHERE RegistroANS IS NULL OR Cobertura IS NULL OR Competencia IS NULL OR IGRPublicado IS NULL
+           OR QtdReclamacoes IS NULL OR QtdReclamacoes < 0 OR QtdBeneficiarios IS NULL OR QtdBeneficiarios < 0;
 
         /* ERROS: chave ou métrica inválida → não segue */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
@@ -168,26 +173,25 @@ BEGIN
         ) v(Regra, Coluna, Valor)
         WHERE v.Regra IS NOT NULL;
 
-        DROP TABLE IF EXISTS #val;
+        DROP TABLE IF EXISTS #val0;
         SELECT i.*,
                SerieIGR = IIF(i.DtAtualizacao IS NULL, 'CONGELADA', 'VIGENTE'),   -- dicionário: data vazia = base congelada
                FlCadastroEncontrado = IIF(o.RegistroANS IS NULL, 0, 1),
                FlIGRDivergente = IIF(i.QtdBeneficiarios > 0
-                                     AND ABS(i.IGRPublicado - CAST(i.QtdReclamacoes AS DECIMAL(18,6)) * 100000 / i.QtdBeneficiarios) > @TolIGR, 1, 0),
-               QtdVersoesGrao = CAST(1 AS INT)   -- versões distintas de métricas no grão (calculado abaixo)
-        INTO #val
+                                     AND ABS(i.IGRPublicado - CAST(i.QtdReclamacoes AS DECIMAL(18,6)) * 100000 / i.QtdBeneficiarios)
+                                         > IIF(i.DtAtualizacao IS NULL, @TolCongelada, @TolVigente), 1, 0),
+               ChaveMetricas = CONCAT(i.QtdReclamacoes, '|', i.QtdBeneficiarios, '|', i.IGRPublicado, '|', i.PorteOperadora, '|', i.CompetenciaBeneficiario)
+        INTO #val0
         FROM #igr i
         LEFT JOIN ODS.Organizacoes o ON o.RegistroANS = i.RegistroANS
-        WHERE NOT EXISTS (SELECT 1 FROM CTL.Rejeicao r WHERE r.IdExecucao = @IdExecucao AND r.Etapa = 'ODS'
-                            AND r.TabelaOrigem = N'STG.ANS_IGR' AND r.Severidade = 'ERRO' AND r.NrLinhaArquivo = i.NrLinhaArquivo);
+        WHERE i.FlErro = 0;
 
-        /* Duplicidade: versões distintas das MÉTRICAS no mesmo grão (nome diferente não conta) */
-        UPDATE v SET QtdVersoesGrao = d.Versoes
-        FROM #val v
-        JOIN (SELECT RegistroANS, Cobertura, Competencia,
-                     Versoes = COUNT(DISTINCT CONCAT(QtdReclamacoes, '|', QtdBeneficiarios, '|', IGRPublicado, '|', PorteOperadora, '|', CompetenciaBeneficiario))
-              FROM #val GROUP BY RegistroANS, Cobertura, Competencia) d
-          ON d.RegistroANS = v.RegistroANS AND d.Cobertura = v.Cobertura AND d.Competencia = v.Competencia;
+        /* Duplicidade: mais de uma versão das MÉTRICAS no mesmo grão (nome diferente não conta).
+           MIN = MAX da chave de métricas na janela ⇒ versão única (uma passada, sem auto-join) */
+        DROP TABLE IF EXISTS #val;
+        SELECT *, QtdVersoesGrao = IIF(MIN(ChaveMetricas) OVER (PARTITION BY RegistroANS, Cobertura, Competencia)
+                                     = MAX(ChaveMetricas) OVER (PARTITION BY RegistroANS, Cobertura, Competencia), 1, 2)
+        INTO #val FROM #val0;
 
         /* Duplicidade conflitante (métricas diferentes) → ERRO em todas as linhas do grão: não há como escolher */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
@@ -266,11 +270,15 @@ BEGIN
                 DenRaw = s.NR_DENOMINADOR, Denominador = TRY_CONVERT(INT, TRIM(s.NR_DENOMINADOR)),
                 VlRaw = s.VL_TR, VlTRPublicado = TRY_CONVERT(DECIMAL(9,2), REPLACE(TRIM(s.VL_TR), ',', '.')),
                 RazaoSocialFonte = NULLIF(TRIM(s.NM_RAZAO_SOCIAL), N''),
-                DtAtualizacao = TRY_CONVERT(DATE, NULLIF(TRIM(s.DT_ATUALIZACAO), N''), 23)
+                DtAtualizacao = TRY_CONVERT(DATE, NULLIF(TRIM(s.DT_ATUALIZACAO), N''), 23),
+                FlErro = CAST(0 AS BIT)
         INTO #tr
         FROM STG.ANS_TR s
         CROSS APPLY (SELECT TRIM(s.CD_REGISTRO_ANS) AS v) r;
         SET @Lidas = @@ROWCOUNT;
+        UPDATE #tr SET FlErro = 1
+        WHERE RegistroANS IS NULL OR Natureza IS NULL OR Competencia IS NULL OR VlTRPublicado IS NULL
+           OR Numerador IS NULL OR Numerador < 0 OR Denominador IS NULL OR Denominador <= 0 OR Numerador > Denominador;
 
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
         SELECT @IdExecucao, 'ODS', N'STG.ANS_TR', NrLinhaArquivo, RegistroRaw, v.Regra, v.Coluna, v.Valor, 'ERRO'
@@ -294,8 +302,7 @@ BEGIN
         INTO #fin
         FROM #tr t
         LEFT JOIN ODS.Organizacoes o ON o.RegistroANS = t.RegistroANS
-        WHERE NOT EXISTS (SELECT 1 FROM CTL.Rejeicao r WHERE r.IdExecucao = @IdExecucao AND r.Etapa = 'ODS'
-                            AND r.TabelaOrigem = N'STG.ANS_TR' AND r.Severidade = 'ERRO' AND r.NrLinhaArquivo = t.NrLinhaArquivo);
+        WHERE t.FlErro = 0;
 
         /* Profiling: grão único na TR. Se surgir duplicidade, não há regra segura de escolha → ERRO em todas */
         INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)
