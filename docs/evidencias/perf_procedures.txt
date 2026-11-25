@@ -1,0 +1,20 @@
+﻿QueryStore|readonly_reason
+----------|---------------
+READ_WRITE|0
+Procedimento|Execucoes|UltimaMs|UltimaCpuMs|UltimasLeituras|UltimasLinhas|Instrucao
+------------|---------|--------|-----------|---------------|-------------|---------
+usp_ODS_IGR|1|349227.6|1107.3|19098|130155|(@TolCongelada decimal(9,4),@TolVigente decimal(9,4))SELECT i.*,                 SerieIGR = IIF(i.DtAtualizacao IS NULL, 'CONGELADA', 'VIGENTE'),   -- dicionário: data vazia = base congelada          
+usp_ODS_IGR|1|301610.4|181.9|5437|0|(@IdExecucao int)INSERT CTL.Rejeicao (IdExecucao, Etapa, TabelaOrigem, NrLinhaArquivo, ChaveNatural, Regra, Coluna, ValorOriginal, Severidade)          SELECT @IdExecucao, 'ODS', N'STG.ANS_IGR', NrLin
+usp_ODS_IGR|1|14758.4|2149.0|939150|130155|SELECT *, QtdVersoesGrao = IIF(MIN(ChaveMetricas) OVER (PARTITION BY RegistroANS, Cobertura, Competencia)                                       = MAX(ChaveMetricas) OVER (PARTITION BY RegistroANS, Cob
+usp_ODS_Validacao|2|1244.2|229.1|15271|3|(@IdExecucao int)WITH desc_ AS (              SELECT TabelaOrigem, COUNT(DISTINCT NrLinhaArquivo) AS Descartadas              FROM CTL.Rejeicao              WHERE IdExecucao = @IdExecucao AND Etapa = 
+usp_ODS_IGR|1|1080.7|815.6|189588|130136|(@IdExecucao int)INSERT ODS.IGR (RegistroANS, Cobertura, Competencia, CompetenciaBeneficiario, QtdReclamacoes, QtdBeneficiarios, IGRPublicado,                          PorteOperadora, RazaoSocialFonte
+usp_ODS_IGR|1|666.8|1755.1|20017|130155|SELECT  s.NrLinhaArquivo,                  RegistroRaw = s.REGISTRO_OPERADORA,                  RegistroANS = CASE WHEN r.v <> '' AND r.v NOT LIKE '%[^0-9]%' AND LEN(r.v) <= 6 THEN RIGHT('000000' + r.
+usp_ODS_IGR|1|644.1|804.7|190682|130136|(@IdExecucao int)INSERT ODS.IGR (RegistroANS, Cobertura, Competencia, CompetenciaBeneficiario, QtdReclamacoes, QtdBeneficiarios, IGRPublicado,                          PorteOperadora, RazaoSocialFonte
+usp_ODS_IGR|1|510.2|988.6|20664|130155|SELECT  s.NrLinhaArquivo,                  RegistroRaw = s.REGISTRO_OPERADORA,                  RegistroANS = CASE WHEN r.v <> '' AND r.v NOT LIKE '%[^0-9]%' AND LEN(r.v) <= 6 THEN RIGHT('000000' + r.
+usp_ODS_TR|1|394.7|237.1|85897|63366|(@IdExecucao int)INSERT ODS.TR (RegistroANS, Natureza, Competencia, Numerador, Denominador, VlTRPublicado, RazaoSocialFonte, DtAtualizacao,                         FlCadastroEncontrado, NrLinhaArquivo
+usp_ODS_IGR|1|328.7|1371.8|405987|130155|UPDATE v SET QtdVersoesGrao = d.Versoes          FROM #val v          JOIN (SELECT RegistroANS, Cobertura, Competencia,                       Versoes = COUNT(DISTINCT CONCAT(QtdReclamacoes, '|', QtdBe
+usp_ODS_TR|1|237.9|303.7|9109|63366|SELECT  s.NrLinhaArquivo,                  RegistroRaw = s.CD_REGISTRO_ANS,                  RegistroANS = CASE WHEN r.v <> '' AND r.v NOT LIKE '%[^0-9]%' AND LEN(r.v) <= 6 THEN RIGHT('000000' + r.v, 
+usp_ODS_TR|1|192.5|910.7|452033|63366|(@IdExecucao int)SELECT t.*,                 FlCadastroEncontrado = IIF(o.RegistroANS IS NULL, 0, 1),                 Versoes = COUNT(*) OVER (PARTITION BY t.RegistroANS, t.Natureza, t.Competencia),  
+usp_ODS_TR|1|185.6|901.9|451944|63366|SELECT t.*,                 FlCadastroEncontrado = IIF(o.RegistroANS IS NULL, 0, 1),                 Versoes = COUNT(*) OVER (PARTITION BY t.RegistroANS, t.Natureza, t.Competencia),                 rn
+usp_ODS_Validacao|2|174.9|198.7|10348|2|SELECT 'R3_COBERTURA_CADASTRO' AS Checagem, Base, Registros, ComCadastro          FROM (SELECT N'IGR' AS Base, COUNT(DISTINCT RegistroANS) AS Registros, COUNT(DISTINCT IIF(FlCadastroEncontrado = 1, Re
+usp_ODS_IGR|1|171.9|660.0|16702|130155|SELECT *, rn = ROW_NUMBER() OVER (PARTITION BY RegistroANS, Cobertura, Competencia ORDER BY NrLinhaArquivo)          INTO #fin FROM #val WHERE QtdVersoesGrao = 1

@@ -1,0 +1,42 @@
+﻿IdExecucao|Origem|Status|DtInicio|DtFim|Mensagem
+----------|------|------|--------|-----|--------
+5|run_local:ods|SUCESSO|2026-11-25 16:30:58|2026-11-25 16:31:06|NULL
+Etapa|Objeto|Status|LinhasLidas|LinhasInseridas|LinhasRejeitadas|Ms|Mensagem
+-----|------|------|-----------|---------------|----------------|--|--------
+VERIFICACAO|STG|SUCESSO|NULL|NULL|NULL|127|NULL
+ODS|ODS.Organizacoes|SUCESSO|4186|4186|0|229|NULL
+ODS|ODS.IGR|SUCESSO|130155|130136|19|4267|NULL
+ODS|ODS.TR|SUCESSO|63366|63366|0|2123|NULL
+VALIDACAO|dbo.usp_ODS_Validacao|SUCESSO|NULL|NULL|NULL|302|R1 reconciliação OK; ver CTL.Rejeicao (Etapa VALIDACAO_ODS) para alertas.
+Etapa|TabelaOrigem|Regra|Severidade|Ocorrencias|Linhas
+-----|------------|-----|----------|-----------|------
+ODS|STG.ANS_IGR|DUPLICIDADE_DESCARTADA|ALERTA|19|19
+Tabela|Recorte|Linhas
+------|-------|------
+ODS.Organizacoes|ATIVA|1101
+ODS.Organizacoes|CANCELADA|3085
+ODS.IGR|CONGELADA 2015-01..2019-04|63247
+ODS.IGR|VIGENTE 2021-05..2026-10|66889
+ODS.TR|Assistencial 2015-01..2019-10|22340
+ODS.TR|Geral 2015-01..2019-10|26062
+ODS.TR|Não Assistencial 2015-01..2019-10|14964
+Modalidade|Situacao|Operadoras
+----------|--------|----------
+Administradora|CANCELADA|44
+Administradora de Benefícios|ATIVA|181
+Administradora de Benefícios|CANCELADA|138
+Autogestão|ATIVA|141
+Autogestão|CANCELADA|472
+Cooperativa Médica|ATIVA|262
+Cooperativa Médica|CANCELADA|128
+Cooperativa odontológica|ATIVA|88
+Cooperativa odontológica|CANCELADA|132
+Filantropia|ATIVA|33
+Filantropia|CANCELADA|122
+Medicina de Grupo|ATIVA|251
+Medicina de Grupo|CANCELADA|1181
+Odontologia de Grupo|ATIVA|138
+Odontologia de Grupo|CANCELADA|795
+Seguradora|CANCELADA|64
+Seguradora Especializada em Saúde|ATIVA|7
+Seguradora Especializada em Saúde|CANCELADA|9

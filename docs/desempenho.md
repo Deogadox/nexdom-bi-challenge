@@ -30,3 +30,7 @@ concessão mínima.
   memória não bastar, usa o `tempdb` (spill) em vez de esperar.
 - **Fora do código**: liberar memória do Windows ou definir `min server memory` resolve na origem. Não é aplicado
   pelo projeto porque altera a configuração da instância.
+
+## Resultado (execução 5)
+Pipeline STG → ODS completo em **8 s**; `usp_ODS_IGR` caiu de 368 s para **4,3 s**, com as mesmas reconciliações
+(IGR 130.155 = 130.136 + 19 duplicidades). Evidências: `docs/evidencias/`.

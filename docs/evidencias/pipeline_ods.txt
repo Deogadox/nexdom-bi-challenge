@@ -1,0 +1,13 @@
+﻿IdExecucao = 5
+Checagem|Tabela|STG|ODS|Descartadas|Resultado
+--------|------|---|---|-----------|---------
+R1_RECONCILIACAO|IGR|130155|130136|19|OK
+R1_RECONCILIACAO|Organizacoes|4186|4186|0|OK
+R1_RECONCILIACAO|TR|63366|63366|0|OK
+Checagem|Ocorrencias
+--------|-----------
+R2_TR_GERAL_INCONSISTENTE|0
+Checagem|Base|Registros|ComCadastro
+--------|----|---------|-----------
+R3_COBERTURA_CADASTRO|IGR|1417|1417
+R3_COBERTURA_CADASTRO|TR|1210|1210

@@ -1,0 +1,21 @@
+Tabela|Linhas|IdExec
+------|------|------
+STG.ANS_Organizacoes_Ativas|1101|1
+STG.ANS_Organizacoes_Canceladas|3085|1
+STG.ANS_IGR|130155|1
+STG.ANS_TR|63366|1
+IdExecucao|TabelaDestino|QtdLinhas|Encoding|Sha256|DtCarga
+----------|-------------|---------|--------|------|-------
+1|STG.ANS_TR|63366|utf-8-sig|f5f4ed8b9685|2026-11-25 15:46:43
+1|STG.ANS_IGR|130155|utf-8-sig|202904e4afb7|2026-11-25 15:46:41
+1|STG.ANS_Organizacoes_Canceladas|3085|utf-8-sig|9c0a28da3c34|2026-11-25 15:46:35
+1|STG.ANS_Organizacoes_Ativas|1101|utf-8-sig|37ee1f183459|2026-11-25 15:46:34
+IdExecucao|Objeto|Status|LinhasLidas|LinhasInseridas|Mensagem
+----------|------|------|-----------|---------------|--------
+1|STG.ANS_TR|SUCESSO|63366|63366|2.6s; encoding=utf-8-sig
+1|STG.ANS_IGR|SUCESSO|130155|130155|5.9s; encoding=utf-8-sig
+1|STG.ANS_Organizacoes_Canceladas|SUCESSO|3085|3085|0.2s; encoding=utf-8-sig
+1|STG.ANS_Organizacoes_Ativas|SUCESSO|1101|1101|0.3s; encoding=utf-8-sig
+IdExecucao|Origem|Status|DtInicio|DtFim|Mensagem
+----------|------|------|--------|-----|--------
+1|python:load_stg|SUCESSO|2026-11-25 15:46:34|2026-11-25 15:46:43|NULL
