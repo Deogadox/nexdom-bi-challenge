@@ -17,4 +17,4 @@ WHERE st.dbid = DB_ID() AND OBJECT_NAME(st.objectid, st.dbid) LIKE N'usp[_]ODS[_
 ORDER BY qs.last_elapsed_time DESC
 OFFSET 0 ROWS FETCH NEXT 15 ROWS ONLY;
 
-SELECT session_id, wait_type, wait_time_ms, blocking_session_id FROM sys.dm_exec_requests WHERE database_id = DB_ID() AND session_id <> @@SPID;
+SELECT session_id, wait_type, wait_time, blocking_session_id FROM sys.dm_exec_requests WHERE database_id = DB_ID() AND session_id <> @@SPID;
