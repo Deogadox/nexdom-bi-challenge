@@ -68,7 +68,8 @@ def validate_header(columns: list[str]) -> None:
 def build_stg_ddl(table: str, df: pd.DataFrame, source_file: str) -> str:
     validate_header(list(df.columns))
     lens = {c: int(df[c].str.len().max() or 0) for c in df.columns}
-    cols = ",\n".join(f"    [{c}] NVARCHAR({column_size(n)}) NULL  -- máx. observado {n}" for c, n in lens.items())
+    # vírgula ANTES do comentário (depois dele ela seria comentada e quebraria o DDL)
+    cols = "\n".join(f"    [{c}] NVARCHAR({column_size(n)}) NULL,  -- máx. observado {n}" for c, n in lens.items())
     return f"""-- Origem: data/raw/{source_file} ({len(df):,} linhas no momento da geração)
 IF OBJECT_ID(N'STG.{table}', N'U') IS NULL
 CREATE TABLE STG.{table} (
@@ -77,7 +78,7 @@ CREATE TABLE STG.{table} (
     ArquivoOrigem  NVARCHAR(260) NOT NULL,
     Sha256         CHAR(64)      NOT NULL,
     DtCarga        DATETIME2(0)  NOT NULL CONSTRAINT DF_STG_{table}_DtCarga DEFAULT SYSDATETIME(),
-{cols},
+{cols}
     CONSTRAINT PK_STG_{table} PRIMARY KEY CLUSTERED (IdExecucao, NrLinhaArquivo)
 );
 GO

@@ -39,6 +39,8 @@ def test_ddl_uses_original_names_and_nvarchar():
     data_lines = [l for l in ddl.splitlines() if l.strip().startswith("[")]
     assert len(data_lines) == len(df.columns)
     assert all(" NVARCHAR(" in l for l in data_lines)  # colunas de dados só texto
+    # toda linha de coluna termina a definição com vírgula fora do comentário
+    assert all(l.split("--")[0].rstrip().endswith(",") for l in data_lines)
 
 
 def test_prepare_frame_line_numbers_start_after_header():
