@@ -3,7 +3,7 @@
   Uso, na raiz do repositório:
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1            # etapas padrão
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas setup,download,db
-  Etapas: setup | download | profile | db | check | stg | ods
+  Etapas: setup | download | profile | db | check | stg | ods | dw
   Toda saída vai também para logs\run_local_<data>.log (evidência de execução).
 #>
 param([string[]]$Etapas = @("setup", "download", "profile", "db", "check"))
@@ -42,6 +42,13 @@ try {
         Run "Procedure de pipeline (07)"  { sqlcmd -S localhost -E -b -f 65001 -i sql\07_pipeline_orchestration.sql }
         Run "Pipeline até o ODS"          { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -Q "EXEC dbo.usp_Pipeline_ANS @Origem = N'run_local:ods', @AteCamada = 'ODS'" -o logs\pipeline_ods.txt; Get-Content -Encoding UTF8 logs\pipeline_ods.txt }
         Run "Evidência do ODS"            { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -i sql\checks\ods_resumo.sql -o logs\ods_resumo.txt; Get-Content -Encoding UTF8 logs\ods_resumo.txt }
+    }
+    if ($Etapas -contains "dw") {
+        Run "Tabelas DW (04)"             { sqlcmd -S localhost -E -b -f 65001 -i sql\04_create_dw_tables.sql }
+        Run "Procedures DW (06)"          { sqlcmd -S localhost -E -b -f 65001 -i sql\06_dw_stored_procedures.sql }
+        Run "Procedure de pipeline (07)"  { sqlcmd -S localhost -E -b -f 65001 -i sql\07_pipeline_orchestration.sql }
+        Run "Pipeline completo"           { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -Q "EXEC dbo.usp_Pipeline_ANS @Origem = N'run_local:dw'" -o logs\pipeline_dw.txt; Get-Content -Encoding UTF8 logs\pipeline_dw.txt }
+        Run "Evidência do DW"             { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -i sql\checks\dw_resumo.sql -o logs\dw_resumo.txt; Get-Content -Encoding UTF8 logs\dw_resumo.txt }
     }
     Write-Host "`nOK. Log: $log" -ForegroundColor Green
 }
