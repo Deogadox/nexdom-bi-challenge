@@ -1,12 +1,15 @@
-# Dados: brutos e tratados são reproduzíveis pelos scripts (manifesto versionado)
+# ---------------------------------------------------------------------------
+# Dados: NÃO versionados (reproduzíveis com src/extraction/download_ans.py e o pipeline)
+#   data/raw/        arquivos originais da ANS + manifest.json (gerados localmente)
+#   data/processed/  profiling, exportação do DW (Parquet)
+# Exceção: resultados das análises (tabelas pequenas, agregadas, sem dados pessoais)
+# ---------------------------------------------------------------------------
 data/raw/**
-!data/raw/manifest.json
 data/processed/**
-!data/processed/profiling/
-!data/processed/profiling/profile.json
 !data/processed/analises/
 !data/processed/analises/*.csv
 !data/processed/analises/resultados.json
+docs/profiling_raw.md
 logs/
 *.part
 
@@ -18,10 +21,10 @@ venv/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Credenciais
+# Credenciais e configuração local
 .env
 *.env
 config/secrets*
 
-# Power BI
+# Power BI (arquivo de trabalho local; versionar só quando finalizado)
 *.pbix.bak

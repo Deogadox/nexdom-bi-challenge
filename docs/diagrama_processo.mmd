@@ -1,0 +1,91 @@
+%% Diagrama do processo — nexdom-bi-challenge
+%% Fonte única do diagrama: renderizado em docs/img/diagrama_processo.svg e .png (mermaid-cli)
+%% Status: implementado (validado com execução real) | parcial | planejado (não desenvolvido)
+flowchart TD
+    classDef ok fill:#e8f1fc,stroke:#257de0,stroke-width:1.5px,color:#191919
+    classDef parcial fill:#fff1e8,stroke:#f47230,stroke-width:1.5px,color:#191919
+    classDef plan fill:#f5f5f5,stroke:#9c9c9c,stroke-width:1.2px,stroke-dasharray:5 4,color:#666666
+    classDef fonte fill:#ffffff,stroke:#191919,stroke-width:1px,color:#191919
+    classDef dado fill:#ffffff,stroke:#9c9c9c,stroke-width:1px,color:#191919
+
+    subgraph LEG["Legenda"]
+        direction LR
+        L1["Implementado e validado<br/>com execução real"]:::ok
+        L2["Parcialmente<br/>implementado"]:::parcial
+        L3["Planejado —<br/>não desenvolvido"]:::plan
+    end
+
+    START(["▶ Ponto de entrada<br/><b>run_local.ps1 -Etapas todas</b><br/>ou cada comando manualmente, na ordem 1→11"]):::ok
+
+    subgraph ANS["Fontes oficiais — ANS · dadosabertos.ans.gov.br/FTP/PDA"]
+        direction LR
+        F1["CADOP ativas<br/>Relatorio_cadop.csv"]:::fonte
+        F2["CADOP canceladas<br/>Relatorio_cadop_canceladas.csv"]:::fonte
+        F3["IGR metodologia 2023<br/>pda-023-igr.csv"]:::fonte
+        F4["Taxa de Resolutividade<br/>pda-048-taxa_de_resolutividade.csv"]:::fonte
+    end
+
+    subgraph PY1["Python — coleta e inspeção"]
+        S1["<b>1 · python -m src.extraction.download_ans</b><br/>baixa dados, dicionários .ods e notas técnicas<br/>calcula SHA-256; versão anterior → _history/"]:::ok
+        S2["<b>2 · python -m src.exploration.profile_raw</b><br/>granularidade, períodos, nulos, duplicidades,<br/>fórmulas oficiais e cobertura de chaves"]:::ok
+    end
+
+    R1[("data/raw/&lt;fonte&gt;/*<br/>data/raw/&lt;fonte&gt;/_history/<br/>data/raw/manifest.json<br/>logs/extraction.log")]:::dado
+    R2[("docs/profiling_raw.md<br/>data/processed/profiling/profile.json")]:::dado
+
+    subgraph SQLDDL["SQL Server · ANS_BI — estrutura"]
+        S3["<b>3 · sql/01_create_schemas.sql</b><br/>banco, schemas STG · ODS · DW · CTL<br/>CTL.Execucao · LogEtapa · ArquivoCarregado · Rejeicao"]:::ok
+        S4["<b>4 · sql/02_create_stg_tables.sql</b><br/>4 tabelas STG em NVARCHAR<br/>gerado por load_stg --emit-ddl a partir dos cabeçalhos reais"]:::ok
+    end
+
+    S5["<b>5 · python -m src.loading.load_stg</b><br/>carga fiel e transacional · confere contagem<br/>ignora arquivo idêntico (sha256) · bloqueia mudança de layout"]:::ok
+    T1[("STG.ANS_Organizacoes_Ativas · _Canceladas<br/>STG.ANS_IGR · STG.ANS_TR<br/>CTL.ArquivoCarregado · logs/loading.log")]:::dado
+
+    S6["<b>6 · sql/03 → 07</b><br/>03 tabelas ODS · 04 modelo estrela DW<br/>05 procedures ODS · 06 procedures DW · 07 orquestração"]:::ok
+
+    subgraph PIPE["7 · EXEC dbo.usp_Pipeline_ANS — tratamento e integração 100% em T-SQL"]
+        direction TB
+        P0["verificação da STG"]:::ok
+        P1["usp_ODS_Organizacoes → usp_ODS_IGR → usp_ODS_TR<br/>tipagem · registro ANS CHAR(6) · domínios · duplicidades<br/>ERRO / ALERTA em CTL.Rejeicao"]:::ok
+        P2["usp_ODS_Validacao<br/>reconciliação STG = ODS + descartadas · Geral = A + N"]:::ok
+        P3["usp_DW_Carga<br/>Dimensoes (MERGE) → Fatos → Validacao (contagens e somas)"]:::ok
+        P0 --> P1 --> P2 --> P3
+    end
+    T2[("ODS.Organizacoes · ODS.IGR · ODS.TR<br/>DW.Dim* (6) · DW.FatoIGR · DW.FatoTR<br/>CTL.LogEtapa · CTL.Rejeicao")]:::dado
+
+    subgraph PY2["Python — estatística sobre o DW"]
+        S8["<b>8 · python -m src.analysis.export_dw</b><br/>DW → Parquet com somas de controle"]:::ok
+        S9["<b>9 · python -m src.analysis.analises</b><br/>ranking · índice combinado · funil de Poisson<br/>IQR e z robusto · Spearman/Pearson · séries · segmentos"]:::ok
+        S10["<b>10 · sql/08_create_analise_tables.sql</b><br/><b>+ python -m src.analysis.publicar_analises</b><br/>grava os resultados estatísticos no DW"]:::ok
+    end
+    T3[("data/processed/dw/*.parquet")]:::dado
+    T4[("data/processed/analises/*.csv · resultados.json<br/>reports/figures/*.png · docs/resultados_analises.md")]:::dado
+    T5[("DW.AnaliseR2Operadora (IGR atual)<br/>DW.AnaliseR1Operadora (IGR × TR)")]:::dado
+
+    S11["<b>11 · Power BI Desktop</b> (montagem manual)<br/>conexão Import em localhost/ANS_BI · schema DW<br/>pronto: modelo, DAX e layout em powerbi/<br/>pendente: arquivo .pbix em construção"]:::parcial
+
+    subgraph PLAN["Planejado — ainda não desenvolvido"]
+        direction LR
+        X1["Relatório técnico<br/>(máx. 5 páginas)"]:::plan
+        X2["Insights executivos<br/>(máx. 1 página)"]:::plan
+        X3["Agendamento<br/>(SQL Server Agent)"]:::plan
+        X4["Testes automatizados<br/>de integração com o banco"]:::plan
+        X5["Preparação para<br/>a entrevista"]:::plan
+    end
+
+    CHK["sql/checks/*.sql — evidências e diagnóstico<br/>stg/ods/dw_resumo · perf_* · em_execucao<br/>→ logs/*.txt · docs/evidencias/"]:::ok
+
+    START --> S1
+    F1 & F2 & F3 & F4 --> S1
+    S1 --> R1 --> S2 --> R2
+    R2 -. define layout .-> S4
+    S2 --> S3 --> S4 --> S5
+    R1 --> S5
+    S5 --> T1 --> S6 --> PIPE
+    PIPE --> T2 --> S8 --> T3 --> S9 --> T4
+    S9 --> S10 --> T5
+    T2 --> S11
+    T5 --> S11
+    S11 --> PLAN
+    T4 -.-> X1
+    T2 -. auditoria .-> CHK

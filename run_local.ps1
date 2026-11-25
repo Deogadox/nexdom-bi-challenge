@@ -4,11 +4,13 @@
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1            # etapas padrão
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas setup,download,db
   Etapas: setup | download | profile | db | check | stg | ods | dw | export | analises
+          todas = setup, download, profile, db, check, stg, ods, dw, analises (do zero ao estado atual)
   Toda saída vai também para logs\run_local_<data>.log (evidência de execução).
 #>
 param([string[]]$Etapas = @("setup", "download", "profile", "db", "check"))
 
 $ErrorActionPreference = "Stop"
+if ($Etapas -contains "todas") { $Etapas = @("setup", "download", "profile", "db", "check", "stg", "ods", "dw", "analises") }
 Set-Location $PSScriptRoot
 New-Item -ItemType Directory -Force -Path logs | Out-Null
 $log = "logs\run_local_$(Get-Date -Format yyyyMMdd_HHmmss).log"

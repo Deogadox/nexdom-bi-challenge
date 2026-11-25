@@ -1,12 +1,11 @@
-pandas>=2.2
+# Dependências efetivamente importadas pelo código (src/ e tests/)
+pandas>=2.2          # leitura dos CSVs, carga STG, análises
 numpy>=1.26
-pyarrow>=15
-scipy>=1.11       # análises estatísticas sobre o DW
-requests>=2.31
-odfpy>=1.4        # leitura dos dicionários .ods da ANS
-openpyxl>=3.1
-matplotlib>=3.8
-sqlalchemy>=2.0   # carga no SQL Server
-pyodbc>=5.0       # driver ODBC 17/18 for SQL Server
-pytest>=8.0
-python-dotenv>=1.0  # conexão SQL Server via .env (fora do Git)
+pyarrow>=15          # exportação do DW em Parquet (src/analysis/export_dw.py)
+requests>=2.31       # download das bases da ANS
+sqlalchemy>=2.0      # conexão/carga no SQL Server
+pyodbc>=5.0          # driver ODBC 17/18 for SQL Server
+python-dotenv>=1.0   # configuração da conexão via .env (fora do Git)
+scipy>=1.11          # estatística (Spearman, Pearson, Kruskal-Wallis, Poisson)
+matplotlib>=3.8      # figuras do relatório (reports/figures)
+pytest>=8.0          # testes (tests/)

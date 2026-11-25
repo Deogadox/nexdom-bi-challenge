@@ -56,6 +56,7 @@ DDD/telefone/fax, e-mail, representante e cargo, região de comercialização, d
    operadora × período (agregando cobertura/natureza conforme a pergunta).
 3. **Agregação correta de períodos**: nunca média de taxas. IGR da janela = média(reclamações)/média(beneficiários)×10⁵;
    TR da janela = Σnumerador/Σdenominador×100.
-4. **Volume mínimo**: TR e IGR de operadoras pequenas são instáveis → critério mínimo de demandas/beneficiários
-   (a calibrar na exploração) e estratificação por porte.
-5. **Cadastro**: modalidade vem do CADOP (ativas ∪ canceladas); registros sem correspondência serão listados, não descartados.
+4. **Volume mínimo**: TR e IGR de operadoras pequenas são instáveis → critério definido na Fase 7: ≥ 5 mil
+   beneficiários médios e ≥ 30 demandas NIP (ver `resultados_analises.md`).
+5. **Cadastro**: modalidade vem do CADOP (ativas ∪ canceladas). Registros sem correspondência são sinalizados, não
+   descartados; na prática, 100% foram encontrados.

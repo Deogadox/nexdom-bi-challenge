@@ -1,64 +1,72 @@
 # Arquitetura técnica
 
-`Python → STG → ODS → DW → Power BI`, com o **SQL Server como motor de tratamento e integração**.
-O Python não aplica regra de negócio: coleta, carrega a STG como texto e orquestra a execução.
+`Python (coleta) → SQL Server: STG → ODS → DW → Python (estatística) → DW.Analise* → Power BI`
 
-```
-ANS FTP PDA
-   │  [Python] src/extraction/download_ans.py   → data/raw/<fonte>/ + manifest.json (sha256, Last-Modified)
-   │  [Python] src/exploration/profile_raw.py   → docs/profiling_raw.md   (somente inspeção)
-   │  [Python] src/loading/load_stg.py          → STG.* (NVARCHAR, + metadados de controle)
-   ▼
-SQL Server  (banco ANS_BI)
-   STG  ── dbo.usp_ODS_Organizacoes / usp_ODS_IGR / usp_ODS_TR / usp_ODS_Validacao ──►  ODS
-   ODS  ── dbo.usp_DW_Dimensoes / usp_DW_Fatos / usp_DW_Validacao               ──►  DW
-   dbo.usp_Pipeline_ANS orquestra tudo; CTL.LogExecucao e CTL.Rejeicao registram cada etapa
-   ▲
-   │  [Python] src/orchestration/run_pipeline.py: download → load_stg → EXEC usp_Pipeline_ANS
-   │           → exporta resultados das checagens para logs/ (evidência de validação)
-   ▼
-[Python] src/analysis/*  (lê DW: Spearman/Pearson, IQR, z robusto, séries)  →  Power BI (Import do DW)
-```
+O **SQL Server é o motor de tratamento e integração**. O Python coleta, carrega a STG sem aplicar regra de negócio,
+e calcula a estatística sobre o DW pronto. Fluxo completo: [`diagrama_processo.md`](diagrama_processo.md).
 
-## Responsabilidades
+## Responsabilidades por camada
 
 | Camada | Tecnologia | Faz | Não faz |
 |---|---|---|---|
-| Coleta | Python (requests) | Download, hash, versionamento dos originais, logs | Alterar arquivos |
-| STG / Bronze | Python (pandas só para ler + SQLAlchemy/pyodbc) → SQL | Cópia fiel, tudo texto, `IdExecucao`, `ArquivoOrigem`, `Sha256`, `DtCarga`, `NrLinhaArquivo` | Converter tipos ou corrigir valores |
-| ODS / Silver | T-SQL (Stored Procedures) | Tipagem com `TRY_CONVERT`, registro ANS `CHAR(6)`, domínios, duplicidades, flags de qualidade, rejeições com motivo | Apagar registros silenciosamente |
-| DW / Gold | T-SQL (Stored Procedures) | Estrela, chaves substitutas, cargas idempotentes (MERGE / delete-insert por competência) | Misturar grãos |
-| Análises | Python (scipy) sobre o DW | Estatística, gráficos para relatório | Retratar dados |
-| BI | Power BI | Medidas DAX, dashboard | Ler a STG |
+| Coleta | Python `src/extraction/download_ans.py` | download, SHA-256, `_history/`, `manifest.json`, log | altera arquivos |
+| Exploração | Python `src/exploration/profile_raw.py` | profiling somente leitura | grava no banco |
+| **STG** (≈ Bronze) | Python `src/loading/load_stg.py` + `sql/02` | cópia fiel em `NVARCHAR`, nomes originais, `IdExecucao`/`NrLinhaArquivo`/`ArquivoOrigem`/`Sha256`/`DtCarga` | converte tipos ou corrige valores |
+| **ODS** (≈ Silver) | T-SQL `sql/05` (`dbo.usp_ODS_*`) | `TRY_CONVERT`, registro ANS `CHAR(6)`, domínios, duplicidades, flags, rejeições com motivo, reconciliação | apaga linha sem registro em `CTL.Rejeicao` |
+| **DW** (≈ Gold) | T-SQL `sql/06` (`dbo.usp_DW_*`) | dimensões por `MERGE` (chaves estáveis, SCD tipo 1), fatos por TRUNCATE + INSERT, validação ODS × DW | mistura grãos |
+| Orquestração | T-SQL `sql/07` (`dbo.usp_Pipeline_ANS`) + `run_local.ps1` | ordem das etapas, interrupção em falha, `CTL.Execucao` | — |
+| Estatística | Python `src/analysis/*` | lê o DW exportado (Parquet), calcula e publica `DW.Analise*` | refaz regras do ODS |
+| BI | Power BI (`powerbi/`) | modelo semântico, DAX, dashboard | lê STG ou ODS |
 
-Medallion é um paralelo **conceitual**: STG ≈ Bronze (preservado), ODS ≈ Silver (tratado e validado),
-DW ≈ Gold (modelado para consumo). Não são sinônimos: o ODS aqui é tabular e operacional, não um lakehouse.
+O paralelo Medallion é conceitual. STG, ODS e DW são camadas arquiteturais de um banco relacional e não equivalem
+estritamente a Bronze, Silver e Gold de um lakehouse.
+
+**Sem duplicação de regras:** o tratamento existe só em T-SQL. A estatística (percentis, funil de Poisson,
+z robusto) existe só em Python e é publicada no DW. O DAX apenas agrega (soma/soma) e aplica os pesos escolhidos pelo usuário.
 
 ## Controle e auditoria (schema `CTL`)
-- `CTL.Execucao` — uma linha por execução (`IdExecucao`, início/fim, status, origem).
-- `CTL.LogEtapa` — etapa, linhas lidas/inseridas/rejeitadas, duração, mensagem de erro.
-- `CTL.Rejeicao` — tabela, chave natural, linha do arquivo, regra violada, valor original.
-- `CTL.ArquivoCarregado` — arquivo, sha256, competências contidas; evita recarga duplicada do mesmo arquivo.
-
-Cada procedure usa `TRY/CATCH` + transação, grava o log e relança o erro para o orquestrador.
-
-## Modelo dimensional (proposta — fechar após o profiling das bases completas)
-
-| Tabela | Grão |
+| Objeto | Conteúdo |
 |---|---|
-| `DW.DimOperadora` | registro ANS (ativas ∪ canceladas ∪ "sem cadastro" vindos dos fatos); status, UF, datas |
-| `DW.DimSegmento` | modalidade do CADOP |
-| `DW.DimTempo` | mês (2019-10 → última competência) |
-| `DW.DimCobertura` / `DW.DimNatureza` | domínios do IGR / TR |
-| `DW.FatoIGR` | operadora × cobertura × mês: reclamações, beneficiários, porte |
-| `DW.FatoTR` | operadora × natureza × mês: numerador, denominador |
+| `CTL.Execucao` | uma linha por execução: origem, início, fim, status (`EM_ANDAMENTO`/`SUCESSO`/`FALHA`), mensagem |
+| `CTL.LogEtapa` | etapa, objeto, linhas lidas/inseridas/atualizadas/rejeitadas, duração, erro (número e linha) |
+| `CTL.ArquivoCarregado` | arquivo, URL, SHA-256, encoding, `Last-Modified`, tabela de destino, linhas |
+| `CTL.Rejeicao` | linha do arquivo, chave, regra, coluna, valor original, severidade (`ERRO`/`ALERTA`) |
+| `CTL.usp_IniciarExecucao`, `usp_RegistrarEtapa`, `usp_FinalizarExecucao` | API de log usada pelas procedures e pelo Python |
 
-Fatos separados (quebras diferentes: cobertura vs natureza), sem relação entre si, ligados por `DimOperadora` e
-`DimTempo`. Guardam numerador e denominador; o DAX recompõe as taxas com `DIVIDE(SUM, SUM)`.
-O indicador combinado (pesos parametrizáveis) será calculado no DAX ou numa view `DW.vw_DesempenhoJanela`.
+Toda procedure usa `TRY/CATCH` + transação (`XACT_ABORT ON`), registra a etapa e relança o erro para a orquestração.
 
-## Ambiente
-- SQL Server: instância local do autor (Windows). Não há SQL Server no ambiente de desenvolvimento assistido
-  (sem acesso ao registro de imagens da Microsoft); os scripts são executados localmente e as evidências
-  de validação vêm de `logs/`.
-- Agendamento: SQL Server Agent só será documentado como implementado se for configurado de fato.
+## Modelo dimensional (implementado — `sql/04`)
+
+```
+                 DimSegmento
+                      │ 1:*
+DimTempo ──1:*── FatoIGR ──*:1── DimOperadora ──1:*── FatoTR ──*:1── DimTempo
+                  │    │                │                  │
+           DimCobertura DimPorte        │             DimNatureza
+                                        └──1:*── AnaliseR2Operadora / AnaliseR1Operadora (sql/08)
+```
+
+| Tabela | Grão | Observação |
+|---|---|---|
+| `DW.DimOperadora` | registro ANS | ativas ∪ canceladas; membro −1 "Não informada" |
+| `DW.DimSegmento` | modalidade CADOP | `Segmento` (legadas "Seguradora" e "Administradora" mapeadas) e `GrupoAssistencial` |
+| `DW.DimTempo` | mês (`SkTempo` AAAAMM) | flags `FlIGRDisponivel`, `FlTRDisponivel`, `FlJanelaComumIGRTR`, `SerieIGR` |
+| `DW.DimCobertura` / `DimNatureza` / `DimPorte` | domínio | `DimNatureza.FlTotal` marca "Geral" (= A + N) |
+| `DW.FatoIGR` | operadora × cobertura × mês | reclamações, beneficiários, porte do mês, `IGRCalculado` (persistida) |
+| `DW.FatoTR` | operadora × natureza × mês | numerador e denominador |
+| `DW.AnaliseR2Operadora` | operadora × cobertura | IGR 12 meses atuais, elegibilidade, funil, IQR/z, outlier consistente |
+| `DW.AnaliseR1Operadora` | operadora | IGR × TR 2018–19, scores por percentil, índice combinado, quadrante |
+
+- **Fatos separados:** IGR quebra por cobertura e TR por natureza. Não há relação linha a linha, então uma tabela única
+  ou um relacionamento direto multiplicaria registros. A comparação passa por `DimOperadora` e `DimTempo`.
+- **Numerador e denominador** guardados: o IGR e a TR são recompostos em qualquer nível como soma/soma.
+- **Porte no fato:** muda ao longo do tempo e entre coberturas da mesma operadora (184 casos na série vigente).
+
+## Ambiente de execução
+- **Validado em:** Windows 10, SQL Server 2022 Developer (instância padrão `localhost`), ODBC Driver 18 e Python com `.venv`.
+- **Requisitos de T-SQL:** SQL Server 2017+ (`STRING_AGG`, `TRIM`, `CREATE OR ALTER`, `DROP … IF EXISTS`).
+- **Opções de sessão:** os scripts declaram `ANSI_NULLS` e `QUOTED_IDENTIFIER ON`, exigidos pela coluna computada
+  persistida. No `sqlcmd`, use `-I` e `-f 65001` (UTF-8).
+- **Memória:** as instruções pesadas usam `OPTION (MAX_GRANT_PERCENT = 10)`. A configuração de memória mínima e
+  máxima da instância está em [`desempenho.md`](desempenho.md).
+- **Agendamento:** não configurado. A execução é manual (`run_local.ps1`); o SQL Server Agent está planejado.
