@@ -9,6 +9,9 @@
    Uso:  EXEC dbo.usp_Pipeline_ANS;                         -- pipeline completo
          EXEC dbo.usp_Pipeline_ANS @AteCamada = 'ODS';      -- para após o ODS
    ===================================================================================== */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 USE ANS_BI;
 GO
 CREATE OR ALTER PROCEDURE dbo.usp_Pipeline_ANS

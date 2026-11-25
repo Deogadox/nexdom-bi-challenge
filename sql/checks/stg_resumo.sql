@@ -1,4 +1,7 @@
 /* Evidência da carga STG: contagens por tabela vs. arquivo e log da última execução. */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 SELECT 'STG.ANS_Organizacoes_Ativas' AS Tabela, COUNT_BIG(*) AS Linhas, MIN(IdExecucao) AS IdExec FROM STG.ANS_Organizacoes_Ativas
 UNION ALL SELECT 'STG.ANS_Organizacoes_Canceladas', COUNT_BIG(*), MIN(IdExecucao) FROM STG.ANS_Organizacoes_Canceladas

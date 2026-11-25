@@ -181,6 +181,7 @@ def load_one(engine, source: str, manifest: dict, id_exec: int, force: bool) -> 
 def emit_ddl() -> None:
     parts = ["/* 02_create_stg_tables.sql — GERADO por src/loading/load_stg.py --emit-ddl a partir dos",
              "   cabeçalhos reais dos arquivos da ANS. Colunas com o nome original; tudo NVARCHAR (cópia fiel). */",
+             "SET ANSI_NULLS ON;", "SET QUOTED_IDENTIFIER ON;", "GO",
              "USE ANS_BI;", "GO", ""]
     for source, (rel, table) in TARGETS.items():
         df, _ = read_ans_csv(RAW / rel, keep_empty_as_text=True)

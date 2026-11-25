@@ -1,4 +1,7 @@
 /* Evidência do ODS: última execução, log por etapa, rejeições/alertas por regra e perfil das tabelas. */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 DECLARE @Id INT = (SELECT MAX(IdExecucao) FROM CTL.Execucao WHERE Origem LIKE N'%Pipeline%' OR Origem LIKE N'run_local%');
 

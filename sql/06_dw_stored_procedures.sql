@@ -8,6 +8,9 @@
    OPTION (MAX_GRANT_PERCENT = 10): ver docs/desempenho.md.
    Execução: sqlcmd -S localhost -E -b -f 65001 -i sql\06_dw_stored_procedures.sql
    ===================================================================================== */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 USE ANS_BI;
 GO
 

@@ -11,6 +11,9 @@
        (RESOURCE_SEMAPHORE, 684 s acumulados). Com o limite, executam na hora (eventual spill no tempdb).
    Execução: sqlcmd -S localhost -E -b -f 65001 -i sql\05_ods_stored_procedures.sql
    ===================================================================================== */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 USE ANS_BI;
 GO
 

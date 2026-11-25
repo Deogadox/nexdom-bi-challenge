@@ -3,6 +3,9 @@
    Alvo: SQL Server 2022 (16.x). Idempotente: pode ser reexecutado sem perda de dados.
    Execução:  sqlcmd -S localhost -E -b -i sql\01_create_schemas.sql
    ===================================================================================== */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 IF DB_ID(N'ANS_BI') IS NULL
 BEGIN

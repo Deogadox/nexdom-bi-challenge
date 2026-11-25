@@ -9,6 +9,9 @@
    Membro desconhecido: chave -1 em cada dimensão (nenhum fato fica sem dimensão).
    Idempotente. Execução: sqlcmd -S localhost -E -b -f 65001 -i sql\04_create_dw_tables.sql
    ===================================================================================== */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 USE ANS_BI;
 GO
 IF OBJECT_ID(N'DW.DimSegmento', N'U') IS NULL

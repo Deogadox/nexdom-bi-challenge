@@ -7,6 +7,9 @@
    Rastreabilidade: TabelaOrigem/NrLinhaArquivo apontam para a linha exata da STG (e do arquivo).
    Idempotente: cria apenas o que não existe. Execução: sqlcmd -S localhost -E -b -i sql\03_create_ods_tables.sql
    ===================================================================================== */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 USE ANS_BI;
 GO
 IF OBJECT_ID(N'ODS.Organizacoes', N'U') IS NULL

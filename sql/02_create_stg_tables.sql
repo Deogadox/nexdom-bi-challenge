@@ -1,5 +1,8 @@
 /* 02_create_stg_tables.sql — GERADO por src/loading/load_stg.py --emit-ddl a partir dos
    cabeçalhos reais dos arquivos da ANS. Colunas com o nome original; tudo NVARCHAR (cópia fiel). */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 USE ANS_BI;
 GO
 

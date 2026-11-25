@@ -1,5 +1,8 @@
 /* Diagnóstico de desempenho por instrução das procedures do ODS, via Query Store
    (persistente; ativo por padrão em bancos novos no SQL Server 2022). */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 SELECT actual_state_desc AS QueryStore, readonly_reason FROM sys.database_query_store_options;
 

@@ -1,4 +1,7 @@
 /* Evidência do DW: log da última execução, dimensões, fatos por recorte e cobertura por segmento. */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 DECLARE @Id INT = (SELECT MAX(IdExecucao) FROM CTL.Execucao);
 SELECT IdExecucao, Origem, Status, DtInicio, DtFim, LEFT(Mensagem, 300) AS Mensagem FROM CTL.Execucao WHERE IdExecucao = @Id;

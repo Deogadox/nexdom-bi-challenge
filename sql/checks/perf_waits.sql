@@ -1,4 +1,7 @@
 /* Confirma a causa da lentidão: esperas acumuladas por concessão de memória e bloqueio, e memória da instância. */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 SELECT wait_type, waiting_tasks_count, CAST(wait_time_ms / 1000.0 AS DECIMAL(12,1)) AS espera_s,
        CAST(max_wait_time_ms / 1000.0 AS DECIMAL(12,1)) AS maior_espera_s
