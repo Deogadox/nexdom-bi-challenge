@@ -1,9 +1,9 @@
-<#
+﻿<#
   run_local.ps1 — Executa o pipeline local (Windows / PowerShell).
   Uso, na raiz do repositório:
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1            # etapas padrão
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas setup,download,db
-  Etapas: setup | download | profile | db | check | stg
+  Etapas: setup | download | profile | db | check | stg | ods
   Toda saída vai também para logs\run_local_<data>.log (evidência de execução).
 #>
 param([string[]]$Etapas = @("setup", "download", "profile", "db", "check"))
@@ -29,12 +29,19 @@ try {
     $py = ".\.venv\Scripts\python.exe"
     if ($Etapas -contains "download") { Run "Download das bases da ANS" { & $py -m src.extraction.download_ans } }
     if ($Etapas -contains "profile")  { Run "Profiling das bases"       { & $py -m src.exploration.profile_raw } }
-    if ($Etapas -contains "db")       { Run "Schemas e controle (01)"   { sqlcmd -S localhost -E -b -i sql\01_create_schemas.sql } }
+    if ($Etapas -contains "db")       { Run "Schemas e controle (01)"   { sqlcmd -S localhost -E -b -f 65001 -i sql\01_create_schemas.sql } }
     if ($Etapas -contains "check")    { Run "Teste de conexão Python"   { & $py -m src.loading.load_stg --check } }
     if ($Etapas -contains "stg") {
-        Run "Tabelas STG (02)"        { sqlcmd -S localhost -E -b -i sql\02_create_stg_tables.sql }
+        Run "Tabelas STG (02)"        { sqlcmd -S localhost -E -b -f 65001 -i sql\02_create_stg_tables.sql }
         Run "Carga STG"               { & $py -m src.loading.load_stg }
-        Run "Evidência da carga STG"  { sqlcmd -S localhost -E -b -d ANS_BI -W -s "|" -i sql\checks\stg_resumo.sql -o logs\stg_resumo.txt; Get-Content logs\stg_resumo.txt }
+        Run "Evidência da carga STG"  { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -i sql\checks\stg_resumo.sql -o logs\stg_resumo.txt; Get-Content -Encoding UTF8 logs\stg_resumo.txt }
+    }
+    if ($Etapas -contains "ods") {
+        Run "Tabelas ODS (03)"            { sqlcmd -S localhost -E -b -f 65001 -i sql\03_create_ods_tables.sql }
+        Run "Procedures ODS (05)"         { sqlcmd -S localhost -E -b -f 65001 -i sql\05_ods_stored_procedures.sql }
+        Run "Procedure de pipeline (07)"  { sqlcmd -S localhost -E -b -f 65001 -i sql\07_pipeline_orchestration.sql }
+        Run "Pipeline até o ODS"          { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -Q "EXEC dbo.usp_Pipeline_ANS @Origem = N'run_local:ods', @AteCamada = 'ODS'" -o logs\pipeline_ods.txt; Get-Content -Encoding UTF8 logs\pipeline_ods.txt }
+        Run "Evidência do ODS"            { sqlcmd -S localhost -E -b -f 65001 -d ANS_BI -W -s "|" -i sql\checks\ods_resumo.sql -o logs\ods_resumo.txt; Get-Content -Encoding UTF8 logs\ods_resumo.txt }
     }
     Write-Host "`nOK. Log: $log" -ForegroundColor Green
 }
