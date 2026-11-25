@@ -67,6 +67,10 @@ ANS (FTP PDA) ─► Python: coleta ─► SQL Server ANS_BI: STG ─► ODS ─
 
 \*Paralelo conceitual: STG, ODS e DW são camadas arquiteturais; não são sinônimos estritos de Bronze, Silver e Gold.
 
+![Arquitetura em camadas — paralelo Medalhão](docs/img/diagrama_medalhao.png)
+<sub>Bronze ≈ STG, Silver ≈ ODS e Gold ≈ DW: objetivo, tabelas, regras e validação de cada camada, com controle
+transversal no schema `CTL`. Explicação em [`docs/arquitetura.md`](docs/arquitetura.md#visão-em-camadas-paralelo-com-a-arquitetura-medalhão).</sub>
+
 **Modelo dimensional:** `DimOperadora`, `DimSegmento`, `DimTempo`, `DimCobertura`, `DimNatureza`, `DimPorte`,
 **`FatoIGR`** (operadora × cobertura × mês) e **`FatoTR`** (operadora × natureza × mês). Os fatos são separados porque
 as quebras diferem e se ligam apenas por dimensões compartilhadas. Guardam numerador e denominador, e as taxas são
@@ -205,6 +209,7 @@ Detalhes, testes estatísticos e ressalvas em [`docs/resultados_analises.md`](do
 | Documento | Conteúdo |
 |---|---|
 | [`docs/diagrama_processo.md`](docs/diagrama_processo.md) | fluxo de execução, entradas e saídas de cada etapa |
+| [`docs/diagrama_medalhao.mmd`](docs/diagrama_medalhao.mmd) | arquitetura em camadas (Bronze/Silver/Gold ≈ STG/ODS/DW) |
 | [`docs/arquitetura.md`](docs/arquitetura.md) | camadas, responsabilidades, modelo dimensional, controle |
 | [`docs/fontes_dados.md`](docs/fontes_dados.md) | fontes, layouts e metodologias oficiais do IGR e da TR |
 | [`docs/achados_exploracao.md`](docs/achados_exploracao.md) | achados do profiling (períodos, duplicidades, chaves) |

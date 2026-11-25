@@ -1,0 +1,79 @@
+%% Arquitetura em camadas — paralelo conceitual com a arquitetura Medalhão
+%% STG/ODS/DW são camadas de um banco relacional (SQL Server); Bronze/Silver/Gold é a nomenclatura
+%% de lakehouse. O paralelo é conceitual: mesma intenção (preservar → tratar → modelar), tecnologias diferentes.
+%% Renderizado em docs/img/diagrama_medalhao.svg e .png (mermaid-cli)
+flowchart LR
+    classDef fonte fill:#ffffff,stroke:#191919,stroke-width:1px,color:#191919
+    classDef bronze fill:#f6e6d6,stroke:#a0622d,stroke-width:1.5px,color:#191919
+    classDef silver fill:#eef0f3,stroke:#7d8691,stroke-width:1.5px,color:#191919
+    classDef gold fill:#fbf1cf,stroke:#c79a00,stroke-width:1.5px,color:#191919
+    classDef ctl fill:#e8f1fc,stroke:#257de0,stroke-width:1.2px,color:#191919
+    classDef consumo fill:#ffffff,stroke:#257de0,stroke-width:1.2px,color:#191919
+    classDef nota fill:#ffffff,stroke:#cfcfcf,stroke-width:1px,color:#666666
+
+    subgraph SRC["Fontes oficiais — ANS"]
+        direction TB
+        A1["CADOP ativas"]:::fonte
+        A2["CADOP canceladas"]:::fonte
+        A3["IGR (metodologia 2023)"]:::fonte
+        A4["Taxa de Resolutividade"]:::fonte
+    end
+
+    RAW["<b>Arquivos originais</b><br/>data/raw/ · _history/ · manifest.json<br/><i>download_ans.py</i><br/>imutáveis · SHA-256 por versão"]:::nota
+
+    subgraph BRONZE["🥉 BRONZE ≈ STG — dado como chegou"]
+        direction TB
+        B0["<b>Objetivo</b><br/>preservar a fonte e permitir reprocessar"]:::bronze
+        B1["<b>Tabelas</b><br/>STG.ANS_Organizacoes_Ativas<br/>STG.ANS_Organizacoes_Canceladas<br/>STG.ANS_IGR · STG.ANS_TR"]:::bronze
+        B2["<b>Regras</b><br/>tudo NVARCHAR · nomes originais<br/>nenhuma conversão ou correção<br/>vazio preservado como ''"]:::bronze
+        B3["<b>Rastreio</b><br/>IdExecucao · NrLinhaArquivo<br/>ArquivoOrigem · Sha256 · DtCarga"]:::bronze
+        B4["<b>Carga</b> — load_stg.py<br/>transacional · confere contagem<br/>pula arquivo idêntico · bloqueia layout novo"]:::bronze
+        B0 --- B1 --- B2 --- B3 --- B4
+    end
+
+    subgraph SILVER["🥈 SILVER ≈ ODS — dado limpo e validado"]
+        direction TB
+        S0["<b>Objetivo</b><br/>dado confiável, tipado e padronizado"]:::silver
+        S1["<b>Tabelas</b><br/>ODS.Organizacoes (ativas ∪ canceladas)<br/>ODS.IGR · ODS.TR"]:::silver
+        S2["<b>Regras</b> — usp_ODS_* (T-SQL)<br/>TRY_CONVERT · registro ANS CHAR(6)<br/>domínios · duplicidades · flags de qualidade"]:::silver
+        S3["<b>Qualidade</b><br/>ERRO → não segue · ALERTA → segue com flag<br/>tudo registrado em CTL.Rejeicao"]:::silver
+        S4["<b>Validação</b> — usp_ODS_Validacao<br/>STG = ODS + descartadas<br/>TR: Geral = Assistencial + Não Assistencial"]:::silver
+        S0 --- S1 --- S2 --- S3 --- S4
+    end
+
+    subgraph GOLD["🥇 GOLD ≈ DW — dado pronto para análise"]
+        direction TB
+        G0["<b>Objetivo</b><br/>modelo de negócio para BI e estatística"]:::gold
+        G1["<b>Modelo estrela</b><br/>DimOperadora · DimSegmento · DimTempo<br/>DimCobertura · DimNatureza · DimPorte"]:::gold
+        G2["<b>Fatos</b> (grãos diferentes, sem relação direta)<br/>FatoIGR: operadora × cobertura × mês<br/>FatoTR: operadora × natureza × mês"]:::gold
+        G3["<b>Resultados estatísticos</b><br/>AnaliseR2Operadora (IGR atual)<br/>AnaliseR1Operadora (IGR × TR)"]:::gold
+        G4["<b>Regras</b> — usp_DW_* (T-SQL)<br/>MERGE nas dimensões (SCD 1) · numerador e denominador<br/>validação: contagens e somas ODS = DW"]:::gold
+        G0 --- G1 --- G2 --- G3 --- G4
+    end
+
+    subgraph USO["Consumo"]
+        direction TB
+        U1["<b>Power BI</b><br/>Import · medidas DAX soma/soma"]:::consumo
+        U2["<b>Estatística</b> (Python)<br/>export_dw → analises → publicar"]:::consumo
+    end
+
+    subgraph CTL["Controle transversal — schema CTL"]
+        direction LR
+        C1["CTL.Execucao<br/>uma linha por execução"]:::ctl
+        C2["CTL.LogEtapa<br/>linhas, duração, erro"]:::ctl
+        C3["CTL.ArquivoCarregado<br/>arquivo → tabela, hash"]:::ctl
+        C4["CTL.Rejeicao<br/>regra, valor original"]:::ctl
+    end
+
+    ORQ["<b>Orquestração e auditoria</b><br/>dbo.usp_Pipeline_ANS · run_local.ps1<br/>cada etapa grava no schema CTL"]:::ctl
+
+    A1 & A2 & A3 & A4 --> RAW
+    RAW --> B0
+    B0 == "usp_ODS_*" ==> S0
+    S0 == "usp_DW_Carga" ==> G0
+    G0 --> U1
+    G0 <--> U2
+    B4 -. log .-> ORQ
+    S4 -. log + rejeições .-> ORQ
+    G4 -. log .-> ORQ
+    ORQ --- CTL

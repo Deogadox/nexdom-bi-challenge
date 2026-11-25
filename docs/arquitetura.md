@@ -5,6 +5,30 @@
 O **SQL Server é o motor de tratamento e integração**. O Python coleta, carrega a STG sem aplicar regra de negócio,
 e calcula a estatística sobre o DW pronto. Fluxo completo: [`diagrama_processo.md`](diagrama_processo.md).
 
+## Visão em camadas (paralelo com a arquitetura Medalhão)
+
+![Arquitetura em camadas](img/diagrama_medalhao.png)
+<sub>Fonte: [`diagrama_medalhao.mmd`](diagrama_medalhao.mmd) · [SVG](img/diagrama_medalhao.svg)</sub>
+
+| | 🥉 Bronze ≈ **STG** | 🥈 Silver ≈ **ODS** | 🥇 Gold ≈ **DW** |
+|---|---|---|---|
+| Pergunta que responde | "O que a ANS publicou?" | "O dado é confiável?" | "O que o negócio precisa ver?" |
+| Estado do dado | como chegou, tudo texto | tipado, padronizado, validado | modelado (estrela) e agregável |
+| Quem escreve | `load_stg.py` (Python) | `usp_ODS_*` (T-SQL) | `usp_DW_*` (T-SQL) + `publicar_analises.py` |
+| Regra principal | nenhuma transformação | ERRO não segue; ALERTA segue com flag | grão explícito; taxas como soma/soma |
+| Garantia | contagem STG = arquivo | STG = ODS + descartadas | contagens e somas ODS = DW |
+| Reprocessamento | TRUNCATE + carga do arquivo vigente | reconstrução a partir da STG | dimensões por MERGE, fatos reconstruídos |
+
+**Por que "paralelo" e não "sinônimo":**
+- A arquitetura Medalhão nasceu em *lakehouses*: arquivos em formatos como Delta e Parquet, processamento distribuído, e
+  em geral várias versões do dado acumuladas na Bronze.
+- Aqui as três camadas são **schemas de um banco relacional** (SQL Server), e o tratamento é feito por stored procedures.
+- O ODS é uma camada operacional tipada, que não guarda histórico.
+- A intenção é a mesma: **preservar → tratar → modelar**, com rastreabilidade entre camadas.
+- O histórico das versões da fonte fica nos arquivos (`data/raw/_history/`, `manifest.json`) e em `CTL.ArquivoCarregado`,
+  não em várias cargas acumuladas na STG. A ANS republica a série completa todo mês, com revisões, então acumular
+  cargas duplicaria as competências.
+
 ## Responsabilidades por camada
 
 | Camada | Tecnologia | Faz | Não faz |
