@@ -30,7 +30,8 @@ powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas todas
 | `dw` | 6 (04, 06, 07) + 7 completo + evidência `dw_resumo` |
 | `export` | 8 |
 | `analises` | 8, 9, 10 |
-| `todas` | `setup, download, profile, db, check, stg, ods, dw, analises` |
+| `glossario` | 12 |
+| `todas` | `setup, download, profile, db, check, stg, ods, dw, analises, glossario` |
 
 ## Passo a passo
 
@@ -46,6 +47,7 @@ powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas todas
 | 8 | `python -m src.analysis.export_dw` | Exporta as dimensões e os fatos do DW para Parquet, conferindo as somas contra o banco | `DW.*` | `data/processed/dw/*.parquet`, `_manifest.json` | 9 |
 | 9 | `python -m src.analysis.analises` | Recortes R1 (IGR × TR, 2018–19) e R2 (IGR atual, 12 meses): ranking, índice combinado, funil de Poisson, IQR e z robusto, Spearman/Pearson, Kruskal-Wallis, séries, segmentos, concentração | `data/processed/dw/*.parquet` | `data/processed/analises/*.csv`, `resultados.json`, `reports/figures/*.png` | 10 |
 | 10 | `sql/08_create_analise_tables.sql` + `python -m src.analysis.publicar_analises` | Cria e carrega as tabelas de resultados estatísticos no DW | `data/processed/analises/*.csv` | `DW.AnaliseR2Operadora`, `DW.AnaliseR1Operadora` | 11 |
+| 12 | `python -m src.semantic.gerar` + `sql/09_glossario.sql` | Valida o catálogo (DAX × definições) e gera o arquivo de medidas, o glossário em Markdown e o script do glossário; carrega `DW.Glossario` | `src/semantic/catalogo.py`, `medidas_dax.json` | `powerbi/medidas.dax`, `docs/glossario.md`, `sql/09_glossario.sql`, `DW.Glossario` | 11 |
 | 11 | Power BI Desktop (**parcial**) | Conexão Import em `localhost`/`ANS_BI`; modelo, medidas e layout documentados em `powerbi/`; `.pbix` em montagem manual | `DW.*` | dashboard (em construção) | relatórios (planejado) |
 
 **Fora do fluxo principal:** `sql/checks/*.sql` são consultas de evidência e diagnóstico

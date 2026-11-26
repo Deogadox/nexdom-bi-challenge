@@ -1,0 +1,296 @@
+// ============================================================================================
+// GERADO por src/semantic/gerar.py a partir de src/semantic/catalogo.py — não edite à mão.
+// Como usar (Power BI Desktop):
+//   1. Crie antes a tabela 'Medidas' e os parâmetros 'Peso IGR' e 'Benef Mínimo' (powerbi/README.md).
+//   2. Abra a Exibição de consulta DAX, cole este arquivo inteiro e clique no link
+//      'Atualizar modelo: adicionar ... novas medidas' que aparece acima de DEFINE.
+//   3. Ajuste formato e pasta de exibição de cada medida (comentário '// pasta | formato' acima dela).
+//   Linhas '///' são a descrição da medida.
+// ============================================================================================
+DEFINE
+
+    // ---------------------------------------------------------------- 0 Parâmetros
+    /// Peso do IGR no Índice Combinado, escolhido pelo usuário no parâmetro 'Peso IGR'. O peso da TR é 1 − este valor.
+    // pasta: 0 Parâmetros | formato: 0.00
+    MEASURE Medidas[Peso IGR Valor] =
+        SELECTEDVALUE ( 'Peso IGR'[Peso IGR], 0.5 )
+    /// Volume mínimo de beneficiários médios para uma operadora entrar em rankings e medianas.
+    // pasta: 0 Parâmetros | formato: #,##0
+    MEASURE Medidas[Benef Mínimo Valor] =
+        SELECTEDVALUE ( 'Benef Mínimo'[Benef Mínimo], 5000 )
+
+    // ---------------------------------------------------------------- 1 IGR
+    /// Quantidade de reclamações de beneficiários registradas na ANS (NIP) no período e recorte selecionados.
+    // pasta: 1 IGR | formato: #,##0
+    MEASURE Medidas[Reclamações] =
+        SUM ( F_IGR[QtdReclamacoes] )
+    /// Soma dos beneficiários de cada mês do período. Denominador do IGR.
+    // pasta: 1 IGR | formato: #,##0
+    MEASURE Medidas[Beneficiários (soma mensal)] =
+        SUM ( F_IGR[QtdBeneficiarios] )
+    /// Quantidade de meses com dado de IGR no contexto (operadora, segmento, período).
+    // pasta: 1 IGR | formato: #,##0
+    MEASURE Medidas[Meses com IGR] =
+        DISTINCTCOUNT ( F_IGR[SkTempo] )
+    /// Média mensal de beneficiários no período. Medida de porte.
+    // pasta: 1 IGR | formato: #,##0
+    MEASURE Medidas[Beneficiários Médios] =
+        DIVIDE ( [Beneficiários (soma mensal)], [Meses com IGR] )
+    /// Índice Geral de Reclamações: reclamações para cada 100 mil beneficiários. Indicador oficial da ANS (metodologia 2023).
+    // pasta: 1 IGR | formato: #,##0.00
+    MEASURE Medidas[IGR] =
+        DIVIDE ( [Reclamações], [Beneficiários (soma mensal)] ) * 100000
+    /// IGR de todo o mercado no mesmo período e cobertura. Referência para comparar uma operadora ou um segmento.
+    // pasta: 1 IGR | formato: #,##0.00
+    MEASURE Medidas[IGR Mercado] =
+        CALCULATE ( [IGR], REMOVEFILTERS ( D_Operadora ), REMOVEFILTERS ( D_Segmento ), REMOVEFILTERS ( D_Porte ) )
+    /// Quantidade de operadoras com beneficiários e IGR no período.
+    // pasta: 1 IGR | formato: #,##0
+    MEASURE Medidas[Operadoras com IGR] =
+        CALCULATE ( DISTINCTCOUNT ( F_IGR[SkOperadora] ), F_IGR[QtdBeneficiarios] > 0 )
+
+    // ---------------------------------------------------------------- 2 TR
+    /// Demandas de reclamação (NIP) classificadas: denominador da Taxa de Resolutividade.
+    // pasta: 2 TR | formato: #,##0
+    MEASURE Medidas[Demandas NIP] =
+        VAR _ApenasTotal = NOT ISFILTERED ( D_Natureza[Natureza] )
+        RETURN
+            IF (
+                _ApenasTotal,
+                CALCULATE ( SUM ( F_TR[Denominador] ), D_Natureza[FlTotal] = TRUE () ),
+                CALCULATE ( SUM ( F_TR[Denominador] ), KEEPFILTERS ( D_Natureza[FlTotal] = FALSE () ) )
+            )
+    /// Demandas resolvidas por mediação, sem abertura de processo sancionador: numerador da TR.
+    // pasta: 2 TR | formato: #,##0
+    MEASURE Medidas[Demandas Resolvidas] =
+        VAR _ApenasTotal = NOT ISFILTERED ( D_Natureza[Natureza] )
+        RETURN
+            IF (
+                _ApenasTotal,
+                CALCULATE ( SUM ( F_TR[Numerador] ), D_Natureza[FlTotal] = TRUE () ),
+                CALCULATE ( SUM ( F_TR[Numerador] ), KEEPFILTERS ( D_Natureza[FlTotal] = FALSE () ) )
+            )
+    /// Taxa de Resolutividade: percentual das reclamações resolvidas na mediação da ANS. Indicador oficial.
+    // pasta: 2 TR | formato: 0.0%
+    MEASURE Medidas[TR] =
+        DIVIDE ( [Demandas Resolvidas], [Demandas NIP] )
+
+    // ---------------------------------------------------------------- 3 Tempo
+    /// Quantidade de meses com dado no período selecionado, independentemente de operadora, segmento ou porte.
+    // pasta: 3 Tempo | formato: #,##0
+    MEASURE Medidas[Meses no Período] =
+        CALCULATE (
+            DISTINCTCOUNT ( F_IGR[SkTempo] ),
+            REMOVEFILTERS ( D_Operadora ), REMOVEFILTERS ( D_Segmento ), REMOVEFILTERS ( D_Porte )
+        )
+    /// IGR dos mesmos meses do ano anterior.
+    // pasta: 3 Tempo | formato: #,##0.00
+    MEASURE Medidas[IGR Ano Anterior] =
+        VAR _MesesAnt =
+            SELECTCOLUMNS ( VALUES ( D_Tempo[SkTempo] ), "SkTempo", D_Tempo[SkTempo] - 100 )
+        RETURN
+            CALCULATE ( [IGR], REMOVEFILTERS ( D_Tempo ), TREATAS ( _MesesAnt, D_Tempo[SkTempo] ) )
+    /// Variação percentual do IGR em relação aos mesmos meses do ano anterior.
+    // pasta: 3 Tempo | formato: +0.0%;-0.0%;0.0%
+    MEASURE Medidas[Var % IGR a.a.] =
+        VAR _MesesAnt =
+            SELECTCOLUMNS ( VALUES ( D_Tempo[SkTempo] ), "SkTempo", D_Tempo[SkTempo] - 100 )
+        VAR _QtdAtual = [Meses no Período]
+        VAR _QtdAnt =
+            CALCULATE ( [Meses no Período], REMOVEFILTERS ( D_Tempo ), TREATAS ( _MesesAnt, D_Tempo[SkTempo] ) )
+        VAR _Ant = [IGR Ano Anterior]
+        RETURN
+            IF ( _QtdAtual = _QtdAnt && NOT ISBLANK ( _Ant ), DIVIDE ( [IGR] - _Ant, _Ant ) )
+    /// TR dos mesmos meses do ano anterior.
+    // pasta: 3 Tempo | formato: 0.0%
+    MEASURE Medidas[TR Ano Anterior] =
+        VAR _MesesAnt =
+            SELECTCOLUMNS ( VALUES ( D_Tempo[SkTempo] ), "SkTempo", D_Tempo[SkTempo] - 100 )
+        RETURN
+            CALCULATE ( [TR], REMOVEFILTERS ( D_Tempo ), TREATAS ( _MesesAnt, D_Tempo[SkTempo] ) )
+    /// Diferença da TR em relação aos mesmos meses do ano anterior, em pontos percentuais.
+    // pasta: 3 Tempo | formato: +0.0;-0.0;0.0
+    MEASURE Medidas[Var TR a.a. (p.p.)] =
+        VAR _Ant = [TR Ano Anterior]
+        RETURN IF ( NOT ISBLANK ( _Ant ) && NOT ISBLANK ( [TR] ), ( [TR] - _Ant ) * 100 )
+
+    // ---------------------------------------------------------------- 4 Ranking
+    /// Indica se a operadora entra em rankings e medianas no período selecionado.
+    // pasta: 4 Ranking | formato: 0
+    MEASURE Medidas[Operadora Elegível] =
+        IF (
+            [Meses com IGR] = [Meses no Período] && [Beneficiários Médios] >= [Benef Mínimo Valor],
+            1, 0
+        )
+    /// Quantidade de operadoras elegíveis no contexto.
+    // pasta: 4 Ranking | formato: #,##0
+    MEASURE Medidas[Operadoras Elegíveis] =
+        COUNTROWS ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ) )
+    /// IGR da operadora típica: mediana dos IGRs das operadoras elegíveis.
+    // pasta: 4 Ranking | formato: #,##0.00
+    MEASURE Medidas[IGR Mediano (operadoras elegíveis)] =
+        MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ), [IGR] )
+    /// Posição da operadora entre as elegíveis, do maior para o menor IGR.
+    // pasta: 4 Ranking | formato: 0
+    MEASURE Medidas[Ranking IGR (1 = pior)] =
+        IF (
+            [Operadora Elegível] = 1,
+            RANKX (
+                FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+                [IGR], , DESC, DENSE
+            )
+        )
+    /// Posição da operadora entre as elegíveis, do menor para o maior IGR.
+    // pasta: 4 Ranking | formato: 0
+    MEASURE Medidas[Ranking IGR (1 = melhor)] =
+        IF (
+            [Operadora Elegível] = 1,
+            RANKX (
+                FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+                [IGR], , ASC, DENSE
+            )
+        )
+    /// IGR agregado do segmento (modalidade) a que a operadora pertence.
+    // pasta: 4 Ranking | formato: #,##0.00
+    MEASURE Medidas[IGR do Segmento] =
+        VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
+        RETURN
+            CALCULATE ( [IGR], REMOVEFILTERS ( D_Operadora ), D_Operadora[SkSegmento] = _Seg )
+    /// Quantas vezes o IGR da operadora é maior (ou menor) que o do próprio segmento.
+    // pasta: 4 Ranking | formato: 0.00x
+    MEASURE Medidas[IGR Relativo ao Segmento] =
+        DIVIDE ( [IGR], [IGR do Segmento] )
+    /// Posição da operadora dentro do próprio segmento, do maior para o menor IGR.
+    // pasta: 4 Ranking | formato: 0
+    MEASURE Medidas[Ranking no Segmento (1 = pior)] =
+        VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
+        RETURN
+            IF (
+                [Operadora Elegível] = 1,
+                RANKX (
+                    FILTER (
+                        CALCULATETABLE (
+                            VALUES ( D_Operadora[NomeExibicao] ),
+                            ALLSELECTED ( D_Operadora ),
+                            D_Operadora[SkSegmento] = _Seg
+                        ),
+                        [Operadora Elegível] = 1
+                    ),
+                    [IGR], , DESC, DENSE
+                )
+            )
+    /// Nome da operadora elegível com o maior IGR no contexto.
+    // pasta: 4 Ranking | formato: (texto)
+    MEASURE Medidas[Pior Operadora (IGR)] =
+        CONCATENATEX (
+            TOPN ( 1, FILTER ( VALUES ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ), [IGR], DESC ),
+            D_Operadora[NomeExibicao], ", "
+        )
+    /// Nome da operadora elegível com o menor IGR no contexto.
+    // pasta: 4 Ranking | formato: (texto)
+    MEASURE Medidas[Melhor Operadora (IGR)] =
+        CONCATENATEX (
+            TOPN ( 1, FILTER ( VALUES ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+                   [IGR], ASC, [Beneficiários Médios], DESC ),
+            D_Operadora[NomeExibicao], ", "
+        )
+
+    // ---------------------------------------------------------------- 5 Concentração
+    /// Participação da operadora (ou do segmento) no total de reclamações selecionado.
+    // pasta: 5 Concentração | formato: 0.0%
+    MEASURE Medidas[% das Reclamações] =
+        DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ) ) )
+    /// Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).
+    // pasta: 5 Concentração | formato: 0.0%
+    MEASURE Medidas[% Acumulado das Reclamações] =
+        VAR _Atual = [Reclamações]
+        VAR _Tab =
+            ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] )
+        RETURN
+            DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
+
+    // ---------------------------------------------------------------- 6 Estatística
+    /// Operadoras elegíveis no recorte atual (R2) da análise estatística.
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Operadoras Elegíveis (R2)] =
+        CALCULATE ( COUNTROWS ( Anl_R2Operadora ), Anl_R2Operadora[Elegivel] = TRUE () )
+    /// Operadoras com IGR estatisticamente acima do esperado e discrepantes no próprio segmento (recorte atual).
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Outliers Críticos (atual)] =
+        CALCULATE (
+            COUNTROWS ( Anl_R2Operadora ),
+            Anl_R2Operadora[OutlierConsistente] = TRUE (),
+            Anl_R2Operadora[Funil] = "Acima (pior)"
+        )
+    /// Percentual das operadoras elegíveis classificadas como outlier crítico.
+    // pasta: 6 Estatística | formato: 0.0%
+    MEASURE Medidas[% Outliers Críticos] =
+        DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )
+    /// Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Excesso de Reclamações (atual)] =
+        CALCULATE (
+            SUM ( Anl_R2Operadora[Reclamacoes] ) - SUM ( Anl_R2Operadora[Esperado] ),
+            Anl_R2Operadora[Elegivel] = TRUE ()
+        )
+    /// Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).
+    // pasta: 6 Estatística | formato: 0.0
+    MEASURE Medidas[Índice Combinado] =
+        VAR _W = [Peso IGR Valor]
+        RETURN
+            AVERAGEX (
+                FILTER ( Anl_R1Operadora, Anl_R1Operadora[Elegivel] = TRUE () ),
+                _W * Anl_R1Operadora[ScoreIGR] + ( 1 - _W ) * Anl_R1Operadora[ScoreTR]
+            )
+    /// Posição da operadora pelo Índice Combinado.
+    // pasta: 6 Estatística | formato: 0
+    MEASURE Medidas[Ranking Índice (1 = melhor)] =
+        IF (
+            NOT ISBLANK ( [Índice Combinado] ),
+            RANKX (
+                FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+                [Índice Combinado], , DESC, DENSE
+            )
+        )
+    /// Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Operadoras Críticas (IGR alto e TR baixa)] =
+        CALCULATE (
+            COUNTROWS ( Anl_R1Operadora ),
+            Anl_R1Operadora[Quadrante] = "Crítico: IGR alto e TR baixa"
+        )
+    /// Percentual das operadoras elegíveis do recorte 2018–19 no quadrante crítico.
+    // pasta: 6 Estatística | formato: 0.0%
+    MEASURE Medidas[% Operadoras Críticas] =
+        DIVIDE (
+            [Operadoras Críticas (IGR alto e TR baixa)],
+            CALCULATE ( COUNTROWS ( Anl_R1Operadora ), Anl_R1Operadora[Elegivel] = TRUE () )
+        )
+
+    // ---------------------------------------------------------------- 7 UX
+    /// Mensagem exibida quando mais de uma cobertura está selecionada.
+    // pasta: 7 UX | formato: (texto)
+    MEASURE Medidas[Aviso Cobertura] =
+        IF (
+            HASONEVALUE ( D_Cobertura[Cobertura] ),
+            BLANK (),
+            "Selecione uma cobertura: IGR médico e odontológico têm escalas ~50× diferentes"
+        )
+    /// Período do IGR efetivamente exibido, para títulos dinâmicos.
+    // pasta: 7 UX | formato: (texto)
+    MEASURE Medidas[Texto Período] =
+        VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )
+        VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
+        RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
+    /// Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.
+    // pasta: 7 UX | formato: (texto)
+    MEASURE Medidas[Cor IGR vs Mercado] =
+        IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
+    /// Texto de rodapé com as fontes e a data da última carga do DW.
+    // pasta: 7 UX | formato: (texto)
+    MEASURE Medidas[Rótulo Fonte] =
+        "Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &
+        FORMAT ( MAX ( D_Operadora[DtCargaDW] ), "dd/mm/yyyy" )
+
+EVALUATE
+    ROW ( "IGR", [IGR], "TR", [TR], "Operadoras com IGR", [Operadoras com IGR] )

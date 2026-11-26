@@ -3,14 +3,14 @@
   Uso, na raiz do repositório:
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1            # etapas padrão
       powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas setup,download,db
-  Etapas: setup | download | profile | db | check | stg | ods | dw | export | analises
-          todas = setup, download, profile, db, check, stg, ods, dw, analises (do zero ao estado atual)
+  Etapas: setup | download | profile | db | check | stg | ods | dw | export | analises | glossario
+          todas = setup, download, profile, db, check, stg, ods, dw, analises, glossario (do zero ao estado atual)
   Toda saída vai também para logs\run_local_<data>.log (evidência de execução).
 #>
 param([string[]]$Etapas = @("setup", "download", "profile", "db", "check"))
 
 $ErrorActionPreference = "Stop"
-if ($Etapas -contains "todas") { $Etapas = @("setup", "download", "profile", "db", "check", "stg", "ods", "dw", "analises") }
+if ($Etapas -contains "todas") { $Etapas = @("setup", "download", "profile", "db", "check", "stg", "ods", "dw", "analises", "glossario") }
 Set-Location $PSScriptRoot
 New-Item -ItemType Directory -Force -Path logs | Out-Null
 $log = "logs\run_local_$(Get-Date -Format yyyyMMdd_HHmmss).log"
@@ -58,6 +58,10 @@ try {
         Run "Análises estatísticas"          { & $py -m src.analysis.analises }
         Run "Tabelas de análise no DW (08)"  { sqlcmd -S localhost -E -b -I -f 65001 -i sql\08_create_analise_tables.sql }
         Run "Publicação das análises no DW"  { & $py -m src.analysis.publicar_analises }
+    }
+    if ($Etapas -contains "glossario") {
+        Run "Geração do catálogo semântico"  { & $py -m src.semantic.gerar }
+        Run "Glossário no DW (09)"           { sqlcmd -S localhost -E -b -I -f 65001 -i sql\09_glossario.sql }
     }
     Write-Host "`nOK. Log: $log" -ForegroundColor Green
 }

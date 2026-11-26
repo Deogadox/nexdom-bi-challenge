@@ -21,6 +21,7 @@ modelo. Depois, **renomeie a consulta** com o nome da coluna "Consulta no Power 
 | `F_TR` | `DW.FatoTR` | fato | operadora × natureza × mês |
 | `Anl_R2Operadora` | `DW.AnaliseR2Operadora` | resultado estatístico | operadora × cobertura (IGR 12 meses atuais) |
 | `Anl_R1Operadora` | `DW.AnaliseR1Operadora` | resultado estatístico | operadora (IGR × TR, mai/2018–abr/2019) |
+| `Glossario` | `DW.Glossario` | documentação (sem relacionamentos) | termo (41 medidas + 12 conceitos) |
 
 Convenção: `D_` dimensão · `F_` fato · `Anl_` resultado estatístico. No banco, os nomes seguem o padrão do DW
 (`Dim`, `Fato`, `Analise`).
@@ -63,13 +64,21 @@ SELECT SkOperadora, SkCobertura, GrupoAssistencial, JanelaInicio, JanelaFim, Rec
        IGR, Demandas, Resolvidas, TRGeral, TRAssistencial, TRNaoAssistencial, Elegivel,
        ScoreIGR, ScoreTR, IndiceCombinado, Quadrante
 FROM DW.AnaliseR1Operadora;
+
+-- Glossario (tabela desconectada: não recebe relacionamentos)
+SELECT Ordem, Tipo, Termo, Pasta, Definicao, Calculo, Unidade, Sentido, Observacao, ExpressaoDAX
+FROM DW.Glossario;
 ```
 </details>
 
 As consultas já deixam de fora as colunas técnicas e de auditoria (`IdExecucaoDW`, `IGRPublicado`, `VlTRPublicado`,
 `FlIGRDivergente`, `SkTempoBeneficiario`, `DtPublicacao`). No Power Query, confira:
 - `Fl*`, `Elegivel` e `OutlierConsistente` com o tipo **Verdadeiro/Falso**, e `DataMes` com o tipo **Data**;
-- as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742.
+- as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742 · `Glossario` 53.
+
+**Medidas de uma vez:** com a tabela `Medidas` e os parâmetros criados, abra a **Exibição de consulta DAX**, cole o
+arquivo [`medidas.dax`](medidas.dax) (as 41 medidas, geradas do catálogo) e clique no link **Atualizar modelo** acima de
+`DEFINE`. Depois ajuste o formato e a pasta de cada medida, indicados no comentário acima dela.
 
 ## 2. Relacionamentos (todos 1:*, filtro em direção única)
 

@@ -77,6 +77,21 @@ Fontes e datas, definição do IGR e da TR, recortes R1 e R2, critério de elegi
 projeto, pesos ajustáveis), as duas definições de "crítica" e as limitações (TR até 2019, lacuna e quebra do IGR,
 vínculos ≠ pessoas). Base: `docs/resultados_analises.md`.
 
+## Página 7 — Glossário
+**Pergunta:** o que significa cada número do dashboard e como ele foi calculado?
+
+| Visual | Campos | Observação |
+|---|---|---|
+| Segmentação (botões) | `Glossario[Tipo]` (Medida / Conceito) | |
+| Segmentação (lista suspensa) | `Glossario[Pasta]` | 0 Parâmetros … 7 UX, Conceitos |
+| Segmentação de texto | `Glossario[Termo]` | visual de pesquisa ("Text filter", certificado) ou lista com busca habilitada |
+| Tabela | `Termo`, `Definicao`, `Calculo`, `Unidade`, `Sentido`, `Observacao` | Ordenada por `Ordem`; quebra de linha ativa; largura maior para Definição e Cálculo |
+| Cartão de várias linhas (opcional) | `ExpressaoDAX` do termo selecionado | Mostra o código da medida escolhida |
+
+A tabela `Glossario` não tem relacionamentos, então os filtros das outras páginas não a afetam. O conteúdo vem do
+catálogo único (`src/semantic/catalogo.py`): o glossário mostra exatamente as medidas do modelo.
+Na página 6, coloque um botão "Ver glossário" que leva a esta página.
+
 ---
 
 ### Tooltips personalizados (página de dica de ferramenta, 320 × 240)

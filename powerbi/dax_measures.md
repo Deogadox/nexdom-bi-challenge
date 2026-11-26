@@ -23,6 +23,7 @@ O Power BI cria as tabelas e as medidas `Valor` automaticamente. Renomeie-as par
 
 ```DAX
 Peso IGR Valor = SELECTEDVALUE ( 'Peso IGR'[Peso IGR], 0.5 )
+
 Benef Mínimo Valor = SELECTEDVALUE ( 'Benef Mínimo'[Benef Mínimo], 5000 )
 ```
 

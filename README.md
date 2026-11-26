@@ -24,6 +24,7 @@ e como os segmentos se comparam.*
 | DW — modelo estrela + orquestração `usp_Pipeline_ANS` | ✅ implementado e validado | contagens e somas ODS = DW ([`pipeline_dw.txt`](docs/evidencias/pipeline_dw.txt)) |
 | Análises estatísticas (5 obrigatórias + concentração) | ✅ implementado e validado | [`docs/resultados_analises.md`](docs/resultados_analises.md), `reports/figures/` |
 | Publicação dos resultados estatísticos no DW | ✅ implementado e validado | `DW.AnaliseR2Operadora` (998) e `DW.AnaliseR1Operadora` (742) |
+| Catálogo semântico: 41 medidas DAX + glossário | ✅ implementado e testado | fonte única → [`powerbi/medidas.dax`](powerbi/medidas.dax), `DW.Glossario`, [`docs/glossario.md`](docs/glossario.md) |
 | Dashboard Power BI | 🟧 parcial | modelo, DAX e layout prontos em [`powerbi/`](powerbi/); o `.pbix` está sendo montado manualmente |
 | Relatório técnico (≤ 5 p.) e insights executivos (≤ 1 p.) | ⬜ planejado | — |
 | Agendamento (SQL Server Agent) e testes de integração com o banco | ⬜ planejado | — |
@@ -77,6 +78,10 @@ transversal no schema `CTL`. 🔍 Versão vetorial: [`docs/diagramas.md`](docs/d
 as quebras diferem e se ligam apenas por dimensões compartilhadas. Guardam numerador e denominador, e as taxas são
 sempre soma/soma. Detalhes em [`docs/arquitetura.md`](docs/arquitetura.md) e [`docs/dicionario_dados.md`](docs/dicionario_dados.md).
 
+**Camada semântica:** um catálogo único (`src/semantic/`) define cada medida (DAX, formato, pasta, definição,
+sentido de leitura). Dele saem o arquivo de medidas do Power BI, a tabela `DW.Glossario` e o glossário em Markdown.
+Testes garantem que glossário e modelo nunca divergem.
+
 **Tecnologias:** Python 3.11+ (pandas, SQLAlchemy, pyodbc, SciPy, Matplotlib, pytest) · SQL Server 2022 (T-SQL,
 stored procedures, `MERGE`, Query Store) · Power BI · Git/GitHub · PowerShell.
 
@@ -96,12 +101,15 @@ nexdom-bi-challenge/
 │   └── analysis/
 │       ├── export_dw.py                # 8  DW → Parquet
 │       ├── analises.py                 # 9  estatística e figuras
-│       └── publicar_analises.py        # 10 resultados → DW.Analise*
+│   │   └── publicar_analises.py        # 10 resultados → DW.Analise*
+│   └── semantic/                       # 12 catálogo único de medidas e conceitos
+│       ├── catalogo.py · medidas_dax.json
+│       └── gerar.py                    #    → powerbi/medidas.dax · sql/09_glossario.sql · docs/glossario.md
 ├── sql/
-│   ├── 01_create_schemas.sql … 08_create_analise_tables.sql   # estrutura, procedures e orquestração
+│   ├── 01_create_schemas.sql … 09_glossario.sql   # estrutura, procedures, orquestração e glossário
 │   ├── checks/                   # consultas de evidência e diagnóstico (não fazem parte do pipeline)
 │   └── README.md
-├── powerbi/                      # modelo, medidas DAX, layout e tema do dashboard
+├── powerbi/                      # modelo, medidas DAX (medidas.dax), layout e tema do dashboard
 ├── docs/                         # arquitetura, regras, achados, resultados, desempenho, limitações, diagrama
 │   ├── evidencias/               # saídas reais das execuções (STG, ODS, DW, desempenho)
 │   └── img/                      # diagrama renderizado (PNG/SVG)
@@ -146,7 +154,7 @@ EXEC sp_configure 'min server memory (MB)', 1024; EXEC sp_configure 'max server 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\run_local.ps1 -Etapas todas
 ```
-Executa, na ordem: `setup → download → profile → db → check → stg → ods → dw → analises`. Cada etapa para no primeiro
+Executa, na ordem: `setup → download → profile → db → check → stg → ods → dw → analises → glossario`. Cada etapa para no primeiro
 erro e grava a transcrição em `logs\run_local_<data>.log`. Também é possível rodar etapas isoladas
 (ex.: `-Etapas stg,ods`).
 
@@ -167,6 +175,7 @@ ordem; no `sqlcmd`, use `-I` (QUOTED_IDENTIFIER) e `-f 65001` (UTF-8).
 | 9 | `python -m src.analysis.analises` | estatística e figuras | `data/processed/analises/`, `reports/figures/` |
 | 10 | `sqlcmd … -i sql\08_create_analise_tables.sql` + `python -m src.analysis.publicar_analises` | publica os resultados no DW | `DW.AnaliseR2Operadora`, `DW.AnaliseR1Operadora` |
 | 11 | Power BI Desktop → SQL Server `localhost` / `ANS_BI` (Importar) | dashboard | ver [`powerbi/README.md`](powerbi/README.md) |
+| 12 | `python -m src.semantic.gerar` + `sqlcmd … -i sql\09_glossario.sql` | gera medidas e glossário do catálogo; carrega o glossário | `powerbi/medidas.dax`, `docs/glossario.md`, `DW.Glossario` |
 
 Os scripts Python também rodam pelo botão *Run* do VS Code. Todos os `.sql` são idempotentes: criam apenas o que não
 existe, e as procedures reconstroem seus alvos.
@@ -179,7 +188,7 @@ Arquivos sem mudança (mesmo SHA-256) não são recarregados. O pipeline reconst
 
 ### 5. Testes e evidências
 ```powershell
-python -m pytest -q          # 11 testes: leitura, parsing, fórmulas oficiais do IGR/TR, geração do DDL
+python -m pytest -q          # 16 testes: leitura, parsing, fórmulas do IGR/TR, DDL, catálogo de medidas e glossário
 ```
 As consultas em `sql/checks/` geram as evidências (`logs/*.txt`). As das execuções validadas estão em `docs/evidencias/`.
 
@@ -216,6 +225,7 @@ Detalhes, testes estatísticos e ressalvas em [`docs/resultados_analises.md`](do
 | [`docs/achados_exploracao.md`](docs/achados_exploracao.md) | achados do profiling (períodos, duplicidades, chaves) |
 | [`docs/regras_de_negocio.md`](docs/regras_de_negocio.md) | regras de tratamento STG → ODS (ERRO/ALERTA) |
 | [`docs/dicionario_dados.md`](docs/dicionario_dados.md) | tabelas e colunas do ODS, DW e controle |
+| [`docs/glossario.md`](docs/glossario.md) | definição de todas as medidas e conceitos do dashboard (gerado do catálogo) |
 | [`docs/resultados_analises.md`](docs/resultados_analises.md) | resultados estatísticos (evidência × hipótese) |
 | [`docs/desempenho.md`](docs/desempenho.md) | diagnóstico de lentidão por memória (Query Store, esperas) |
 | [`docs/limitacoes.md`](docs/limitacoes.md) | limitações das bases e do projeto |

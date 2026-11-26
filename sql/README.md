@@ -19,6 +19,7 @@ No SSMS, basta abrir o arquivo e executar (F5): ele já usa essas opções.
 | `06_dw_stored_procedures.sql` | `dbo.usp_DW_Dimensoes`, `usp_DW_Fatos`, `usp_DW_Validacao`, `usp_DW_Carga` | `MERGE` nas dimensões; validação bloqueante |
 | `07_pipeline_orchestration.sql` | `dbo.usp_Pipeline_ANS` | `EXEC dbo.usp_Pipeline_ANS;` ou `@AteCamada = 'ODS'` |
 | `08_create_analise_tables.sql` | `DW.AnaliseR2Operadora`, `DW.AnaliseR1Operadora` | preenchidas por `python -m src.analysis.publicar_analises` |
+| `09_glossario.sql` | `DW.Glossario` (medidas + conceitos) | **gerado** por `python -m src.semantic.gerar` a partir do catálogo |
 
 ## `checks/` — evidência e diagnóstico (fora do pipeline)
 | Script | Uso |
