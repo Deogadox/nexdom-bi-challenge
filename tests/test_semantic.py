@@ -29,6 +29,7 @@ def test_artefatos_gerados_estao_atualizados():
     assert (ROOT / "powerbi" / "medidas.dax").read_text(encoding="utf-8") == gerar.gerar_dax(dax)
     assert (ROOT / "sql" / "09_glossario.sql").read_text(encoding="utf-8") == gerar.gerar_sql(regs)
     assert (ROOT / "docs" / "glossario.md").read_text(encoding="utf-8") == gerar.gerar_md(regs)
+    assert (ROOT / "powerbi" / "medidas_uma_a_uma.md").read_text(encoding="utf-8") == gerar.gerar_roteiro(dax)
 
 
 def test_glossario_tem_medidas_e_conceitos_com_definicao():
@@ -43,3 +44,12 @@ def test_glossario_tem_medidas_e_conceitos_com_definicao():
 def test_dax_do_documento_igual_ao_catalogo():
     """powerbi/dax_measures.md (explicativo) e medidas_dax.json (fonte do gerador) têm o mesmo código."""
     assert gerar.extrair_dax_do_md() == gerar.carregar_dax()
+
+
+def test_ordem_de_criacao_respeita_dependencias():
+    """No roteiro uma a uma, nenhuma medida pode depender de outra criada depois dela."""
+    dax, ordem = gerar.carregar_dax(), gerar.ordenadas()
+    pos = {n: i for i, n in enumerate(ordem)}
+    for nome in ordem:
+        for r in re.findall(r"(?<![\w'\]])\[([^\]@][^\]]*)\]", dax[nome]):
+            assert pos[r] < pos[nome], f"'{nome}' (posição {pos[nome]+1}) usa '{r}' (posição {pos[r]+1}), criada depois"

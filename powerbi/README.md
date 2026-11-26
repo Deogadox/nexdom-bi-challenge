@@ -76,9 +76,10 @@ As consultas já deixam de fora as colunas técnicas e de auditoria (`IdExecucao
 - `Fl*`, `Elegivel` e `OutlierConsistente` com o tipo **Verdadeiro/Falso**, e `DataMes` com o tipo **Data**;
 - as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742 · `Glossario` 53.
 
-**Medidas de uma vez:** com a tabela `Medidas` e os parâmetros criados, abra a **Exibição de consulta DAX**, cole o
-arquivo [`medidas.dax`](medidas.dax) (as 41 medidas, geradas do catálogo) e clique no link **Atualizar modelo** acima de
-`DEFINE`. Depois ajuste o formato e a pasta de cada medida, indicados no comentário acima dela.
+**Criação das medidas** (com a tabela `Medidas` e os parâmetros já criados), duas opções geradas do mesmo catálogo:
+- **Uma a uma (recomendado):** [`medidas_uma_a_uma.md`](medidas_uma_a_uma.md), com as 41 medidas na ordem de dependência,
+  cada uma com código, pasta, formato e descrição.
+- **Todas de uma vez:** [`medidas.dax`](medidas.dax) na Exibição de consulta DAX → link **Atualizar modelo** acima de `DEFINE`.
 
 ## 2. Relacionamentos (todos 1:*, filtro em direção única)
 

@@ -1,6 +1,7 @@
 """
 Gera os artefatos semânticos a partir do catálogo único (src/semantic/catalogo.py + medidas_dax.json):
   powerbi/medidas.dax    — todas as medidas para a Exibição de consulta DAX ("Atualizar modelo")
+  powerbi/medidas_uma_a_uma.md — roteiro para criar cada medida manualmente (código, pasta, formato, descrição)
   sql/09_glossario.sql   — DW.Glossario (medidas + conceitos) para a página "Glossário" do dashboard
   docs/glossario.md      — glossário legível no GitHub
 
@@ -84,6 +85,31 @@ def gerar_dax(dax: dict[str, str]) -> str:
                    f"        {corpo}"]
     linhas += ["", "EVALUATE", '    ROW ( "IGR", [IGR], "TR", [TR], "Operadoras com IGR", [Operadoras com IGR] )', ""]
     return "\n".join(linhas)
+
+
+# ----------------------------------------------------------------------------- roteiro manual
+def gerar_roteiro(dax: dict[str, str]) -> str:
+    l = ["# Medidas — criação uma a uma", "",
+         "<!-- GERADO por src/semantic/gerar.py a partir de src/semantic/catalogo.py — não edite à mão. -->", "",
+         "Crie na ordem abaixo: cada medida só usa as anteriores. Para cada uma:",
+         "1. Painel **Dados** → botão direito em `Medidas` → **Nova medida**.",
+         "2. Cole o código na barra de fórmulas e pressione **Enter**.",
+         "3. **Ferramentas de medida → Formato**: use o formato indicado (personalizado quando for o caso).",
+         "4. **Exibição de modelo → Propriedades**: preencha **Pasta de exibição** e **Descrição**.", "",
+         "Antes de começar: tabela `Medidas` e parâmetros `Peso IGR` (0 a 1, passo 0,05, padrão 0,5) e",
+         "`Benef Mínimo` (0 a 100.000, passo 1.000, padrão 5.000). Explicações detalhadas: [`dax_measures.md`](dax_measures.md).", ""]
+    n, pasta_atual = 0, None
+    for nome in ordenadas():
+        m = MEDIDAS[nome]
+        if m["pasta"] != pasta_atual:
+            pasta_atual = m["pasta"]
+            l += [f"## Pasta `{pasta_atual}`", ""]
+        n += 1
+        l += [f"### {n}. {nome}", "",
+              f"- **Pasta:** `{m['pasta']}` · **Formato:** `{m['formato'] or 'Texto'}` · **Leitura:** {m['sentido']}",
+              f"- **Descrição:** {m['definicao']}", "",
+              "```DAX", f"{nome} =", dax[nome], "```", ""]
+    return "\n".join(l)
 
 
 # ----------------------------------------------------------------------------- SQL
@@ -180,7 +206,8 @@ def main() -> int:
     (ROOT / "powerbi" / "medidas.dax").write_text(gerar_dax(dax), encoding="utf-8")
     (ROOT / "sql" / "09_glossario.sql").write_text(gerar_sql(regs), encoding="utf-8")
     (ROOT / "docs" / "glossario.md").write_text(gerar_md(regs), encoding="utf-8")
-    print(f"OK: {len(MEDIDAS)} medidas e {len(CONCEITOS)} conceitos → powerbi/medidas.dax, sql/09_glossario.sql, docs/glossario.md")
+    (ROOT / "powerbi" / "medidas_uma_a_uma.md").write_text(gerar_roteiro(dax), encoding="utf-8")
+    print(f"OK: {len(MEDIDAS)} medidas e {len(CONCEITOS)} conceitos → powerbi/medidas.dax, powerbi/medidas_uma_a_uma.md, sql/09_glossario.sql, docs/glossario.md")
     return 0
 
 

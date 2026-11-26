@@ -24,7 +24,7 @@ e como os segmentos se comparam.*
 | DW — modelo estrela + orquestração `usp_Pipeline_ANS` | ✅ implementado e validado | contagens e somas ODS = DW ([`pipeline_dw.txt`](docs/evidencias/pipeline_dw.txt)) |
 | Análises estatísticas (5 obrigatórias + concentração) | ✅ implementado e validado | [`docs/resultados_analises.md`](docs/resultados_analises.md), `reports/figures/` |
 | Publicação dos resultados estatísticos no DW | ✅ implementado e validado | `DW.AnaliseR2Operadora` (998) e `DW.AnaliseR1Operadora` (742) |
-| Catálogo semântico: 41 medidas DAX + glossário | ✅ implementado e testado | fonte única → [`powerbi/medidas.dax`](powerbi/medidas.dax), `DW.Glossario`, [`docs/glossario.md`](docs/glossario.md) |
+| Catálogo semântico: 41 medidas DAX + glossário | ✅ implementado e validado | fonte única → [`powerbi/medidas_uma_a_uma.md`](powerbi/medidas_uma_a_uma.md), [`medidas.dax`](powerbi/medidas.dax), `DW.Glossario` (53 termos), [`docs/glossario.md`](docs/glossario.md) |
 | Dashboard Power BI | 🟧 parcial | modelo, DAX e layout prontos em [`powerbi/`](powerbi/); o `.pbix` está sendo montado manualmente |
 | Relatório técnico (≤ 5 p.) e insights executivos (≤ 1 p.) | ⬜ planejado | — |
 | Agendamento (SQL Server Agent) e testes de integração com o banco | ⬜ planejado | — |
@@ -104,7 +104,7 @@ nexdom-bi-challenge/
 │   │   └── publicar_analises.py        # 10 resultados → DW.Analise*
 │   └── semantic/                       # 12 catálogo único de medidas e conceitos
 │       ├── catalogo.py · medidas_dax.json
-│       └── gerar.py                    #    → powerbi/medidas.dax · sql/09_glossario.sql · docs/glossario.md
+│       └── gerar.py                    #    → powerbi/medidas*.{dax,md} · sql/09_glossario.sql · docs/glossario.md
 ├── sql/
 │   ├── 01_create_schemas.sql … 09_glossario.sql   # estrutura, procedures, orquestração e glossário
 │   ├── checks/                   # consultas de evidência e diagnóstico (não fazem parte do pipeline)
@@ -188,7 +188,7 @@ Arquivos sem mudança (mesmo SHA-256) não são recarregados. O pipeline reconst
 
 ### 5. Testes e evidências
 ```powershell
-python -m pytest -q          # 16 testes: leitura, parsing, fórmulas do IGR/TR, DDL, catálogo de medidas e glossário
+python -m pytest -q          # 17 testes: leitura, parsing, fórmulas do IGR/TR, DDL, catálogo de medidas e glossário
 ```
 As consultas em `sql/checks/` geram as evidências (`logs/*.txt`). As das execuções validadas estão em `docs/evidencias/`.
 
