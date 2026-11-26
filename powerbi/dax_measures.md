@@ -28,11 +28,11 @@ Benef Mínimo Valor = SELECTEDVALUE ( 'Benef Mínimo'[Benef Mínimo], 5000 )
 ## 1. Base · IGR  (pasta `1 IGR`)
 
 ```DAX
-Reclamações = SUM ( FatoIGR[QtdReclamacoes] )
+Reclamações = SUM ( F_IGR[QtdReclamacoes] )
 
-Beneficiários (soma mensal) = SUM ( FatoIGR[QtdBeneficiarios] )
+Beneficiários (soma mensal) = SUM ( F_IGR[QtdBeneficiarios] )
 
-Meses com IGR = DISTINCTCOUNT ( FatoIGR[SkTempo] )
+Meses com IGR = DISTINCTCOUNT ( F_IGR[SkTempo] )
 
 Beneficiários Médios =
 DIVIDE ( [Beneficiários (soma mensal)], [Meses com IGR] )
@@ -41,10 +41,10 @@ IGR =
 DIVIDE ( [Reclamações], [Beneficiários (soma mensal)] ) * 100000
 
 IGR Mercado =
-CALCULATE ( [IGR], REMOVEFILTERS ( DimOperadora ), REMOVEFILTERS ( DimSegmento ), REMOVEFILTERS ( DimPorte ) )
+CALCULATE ( [IGR], REMOVEFILTERS ( D_Operadora ), REMOVEFILTERS ( D_Segmento ), REMOVEFILTERS ( D_Porte ) )
 
 Operadoras com IGR =
-CALCULATE ( DISTINCTCOUNT ( FatoIGR[SkOperadora] ), FatoIGR[QtdBeneficiarios] > 0 )
+CALCULATE ( DISTINCTCOUNT ( F_IGR[SkOperadora] ), F_IGR[QtdBeneficiarios] > 0 )
 ```
 - `IGR` vale para qualquer recorte: operadora, segmento, porte, mês ou período. Somar reclamações e beneficiários
   antes de dividir equivale à definição oficial para períodos (média de reclamações ÷ média de beneficiários).
@@ -55,21 +55,21 @@ CALCULATE ( DISTINCTCOUNT ( FatoIGR[SkOperadora] ), FatoIGR[QtdBeneficiarios] > 
 
 ```DAX
 Demandas NIP =
-VAR _ApenasTotal = NOT ISFILTERED ( DimNatureza[Natureza] )
+VAR _ApenasTotal = NOT ISFILTERED ( D_Natureza[Natureza] )
 RETURN
     IF (
         _ApenasTotal,
-        CALCULATE ( SUM ( FatoTR[Denominador] ), DimNatureza[FlTotal] = TRUE () ),
-        CALCULATE ( SUM ( FatoTR[Denominador] ), KEEPFILTERS ( DimNatureza[FlTotal] = FALSE () ) )
+        CALCULATE ( SUM ( F_TR[Denominador] ), D_Natureza[FlTotal] = TRUE () ),
+        CALCULATE ( SUM ( F_TR[Denominador] ), KEEPFILTERS ( D_Natureza[FlTotal] = FALSE () ) )
     )
 
 Demandas Resolvidas =
-VAR _ApenasTotal = NOT ISFILTERED ( DimNatureza[Natureza] )
+VAR _ApenasTotal = NOT ISFILTERED ( D_Natureza[Natureza] )
 RETURN
     IF (
         _ApenasTotal,
-        CALCULATE ( SUM ( FatoTR[Numerador] ), DimNatureza[FlTotal] = TRUE () ),
-        CALCULATE ( SUM ( FatoTR[Numerador] ), KEEPFILTERS ( DimNatureza[FlTotal] = FALSE () ) )
+        CALCULATE ( SUM ( F_TR[Numerador] ), D_Natureza[FlTotal] = TRUE () ),
+        CALCULATE ( SUM ( F_TR[Numerador] ), KEEPFILTERS ( D_Natureza[FlTotal] = FALSE () ) )
     )
 
 TR = DIVIDE ( [Demandas Resolvidas], [Demandas NIP] )
@@ -84,37 +84,37 @@ TR = DIVIDE ( [Demandas Resolvidas], [Demandas NIP] )
 ```DAX
 Meses no Período =
 CALCULATE (
-    DISTINCTCOUNT ( FatoIGR[SkTempo] ),
-    REMOVEFILTERS ( DimOperadora ), REMOVEFILTERS ( DimSegmento ), REMOVEFILTERS ( DimPorte )
+    DISTINCTCOUNT ( F_IGR[SkTempo] ),
+    REMOVEFILTERS ( D_Operadora ), REMOVEFILTERS ( D_Segmento ), REMOVEFILTERS ( D_Porte )
 )
 
 IGR Ano Anterior =
 VAR _MesesAnt =
-    SELECTCOLUMNS ( VALUES ( DimTempo[SkTempo] ), "SkTempo", DimTempo[SkTempo] - 100 )
+    SELECTCOLUMNS ( VALUES ( D_Tempo[SkTempo] ), "SkTempo", D_Tempo[SkTempo] - 100 )
 RETURN
-    CALCULATE ( [IGR], REMOVEFILTERS ( DimTempo ), TREATAS ( _MesesAnt, DimTempo[SkTempo] ) )
+    CALCULATE ( [IGR], REMOVEFILTERS ( D_Tempo ), TREATAS ( _MesesAnt, D_Tempo[SkTempo] ) )
 
 Var % IGR a.a. =
 VAR _MesesAnt =
-    SELECTCOLUMNS ( VALUES ( DimTempo[SkTempo] ), "SkTempo", DimTempo[SkTempo] - 100 )
+    SELECTCOLUMNS ( VALUES ( D_Tempo[SkTempo] ), "SkTempo", D_Tempo[SkTempo] - 100 )
 VAR _QtdAtual = [Meses no Período]
 VAR _QtdAnt =
-    CALCULATE ( [Meses no Período], REMOVEFILTERS ( DimTempo ), TREATAS ( _MesesAnt, DimTempo[SkTempo] ) )
+    CALCULATE ( [Meses no Período], REMOVEFILTERS ( D_Tempo ), TREATAS ( _MesesAnt, D_Tempo[SkTempo] ) )
 VAR _Ant = [IGR Ano Anterior]
 RETURN
     IF ( _QtdAtual = _QtdAnt && NOT ISBLANK ( _Ant ), DIVIDE ( [IGR] - _Ant, _Ant ) )
 
 TR Ano Anterior =
 VAR _MesesAnt =
-    SELECTCOLUMNS ( VALUES ( DimTempo[SkTempo] ), "SkTempo", DimTempo[SkTempo] - 100 )
+    SELECTCOLUMNS ( VALUES ( D_Tempo[SkTempo] ), "SkTempo", D_Tempo[SkTempo] - 100 )
 RETURN
-    CALCULATE ( [TR], REMOVEFILTERS ( DimTempo ), TREATAS ( _MesesAnt, DimTempo[SkTempo] ) )
+    CALCULATE ( [TR], REMOVEFILTERS ( D_Tempo ), TREATAS ( _MesesAnt, D_Tempo[SkTempo] ) )
 
 Var TR a.a. (p.p.) =
 VAR _Ant = [TR Ano Anterior]
 RETURN IF ( NOT ISBLANK ( _Ant ) && NOT ISBLANK ( [TR] ), ( [TR] - _Ant ) * 100 )
 ```
-- `DimTempo` não é tabela de datas, então o "ano anterior" é o `SkTempo − 100` (AAAAMM). Funciona para qualquer
+- `D_Tempo` não é tabela de datas, então o "ano anterior" é o `SkTempo − 100` (AAAAMM). Funciona para qualquer
   seleção de meses.
 - `Var % IGR a.a.` só retorna valor quando o período anterior tem **o mesmo número de meses com dado**. Isso evita
   comparar 2026 (jan–out) com 2025 inteiro e evita atravessar a lacuna de 2019-05 a 2021-04.
@@ -130,16 +130,16 @@ IF (
 )
 
 Operadoras Elegíveis =
-COUNTROWS ( FILTER ( VALUES ( DimOperadora[SkOperadora] ), [Operadora Elegível] = 1 ) )
+COUNTROWS ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ) )
 
 IGR Mediano (operadoras elegíveis) =
-MEDIANX ( FILTER ( VALUES ( DimOperadora[SkOperadora] ), [Operadora Elegível] = 1 ), [IGR] )
+MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ), [IGR] )
 
 Ranking IGR (1 = pior) =
 IF (
     [Operadora Elegível] = 1,
     RANKX (
-        FILTER ( ALLSELECTED ( DimOperadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , DESC, DENSE
     )
 )
@@ -148,30 +148,30 @@ Ranking IGR (1 = melhor) =
 IF (
     [Operadora Elegível] = 1,
     RANKX (
-        FILTER ( ALLSELECTED ( DimOperadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , ASC, DENSE
     )
 )
 
 IGR do Segmento =
-VAR _Seg = SELECTEDVALUE ( DimOperadora[SkSegmento] )
+VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
 RETURN
-    CALCULATE ( [IGR], REMOVEFILTERS ( DimOperadora ), DimOperadora[SkSegmento] = _Seg )
+    CALCULATE ( [IGR], REMOVEFILTERS ( D_Operadora ), D_Operadora[SkSegmento] = _Seg )
 
 IGR Relativo ao Segmento =
 DIVIDE ( [IGR], [IGR do Segmento] )
 
 Ranking no Segmento (1 = pior) =
-VAR _Seg = SELECTEDVALUE ( DimOperadora[SkSegmento] )
+VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
 RETURN
     IF (
         [Operadora Elegível] = 1,
         RANKX (
             FILTER (
                 CALCULATETABLE (
-                    VALUES ( DimOperadora[NomeExibicao] ),
-                    ALLSELECTED ( DimOperadora ),
-                    DimOperadora[SkSegmento] = _Seg
+                    VALUES ( D_Operadora[NomeExibicao] ),
+                    ALLSELECTED ( D_Operadora ),
+                    D_Operadora[SkSegmento] = _Seg
                 ),
                 [Operadora Elegível] = 1
             ),
@@ -181,15 +181,15 @@ RETURN
 
 Pior Operadora (IGR) =
 CONCATENATEX (
-    TOPN ( 1, FILTER ( VALUES ( DimOperadora[NomeExibicao] ), [Operadora Elegível] = 1 ), [IGR], DESC ),
-    DimOperadora[NomeExibicao], ", "
+    TOPN ( 1, FILTER ( VALUES ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ), [IGR], DESC ),
+    D_Operadora[NomeExibicao], ", "
 )
 
 Melhor Operadora (IGR) =
 CONCATENATEX (
-    TOPN ( 1, FILTER ( VALUES ( DimOperadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+    TOPN ( 1, FILTER ( VALUES ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
            [IGR], ASC, [Beneficiários Médios], DESC ),
-    DimOperadora[NomeExibicao], ", "
+    D_Operadora[NomeExibicao], ", "
 )
 ```
 - **Elegível:** presente em todos os meses do período e com média ≥ `Benef Mínimo` (padrão 5 mil). Na análise, isso
@@ -203,28 +203,28 @@ CONCATENATEX (
 
 ```DAX
 % das Reclamações =
-DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( DimOperadora ) ) )
+DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ) ) )
 
 % Acumulado das Reclamações =
 VAR _Atual = [Reclamações]
 VAR _Tab =
-    ADDCOLUMNS ( ALLSELECTED ( DimOperadora[NomeExibicao] ), "@Rec", [Reclamações] )
+    ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
 ```
 - Gráfico de Pareto. Na análise, as 10 maiores concentram 52% das reclamações e 40,5% dos beneficiários.
 
-## 6. Resultados estatísticos  (pasta `6 Estatística`, tabelas `AnaliseR2Operadora` / `AnaliseR1Operadora`)
+## 6. Resultados estatísticos  (pasta `6 Estatística`, tabelas `Anl_R2Operadora` / `Anl_R1Operadora`)
 
 ```DAX
 Operadoras Elegíveis (R2) =
-CALCULATE ( COUNTROWS ( AnaliseR2Operadora ), AnaliseR2Operadora[Elegivel] = TRUE () )
+CALCULATE ( COUNTROWS ( Anl_R2Operadora ), Anl_R2Operadora[Elegivel] = TRUE () )
 
 Outliers Críticos (atual) =
 CALCULATE (
-    COUNTROWS ( AnaliseR2Operadora ),
-    AnaliseR2Operadora[OutlierConsistente] = TRUE (),
-    AnaliseR2Operadora[Funil] = "Acima (pior)"
+    COUNTROWS ( Anl_R2Operadora ),
+    Anl_R2Operadora[OutlierConsistente] = TRUE (),
+    Anl_R2Operadora[Funil] = "Acima (pior)"
 )
 
 % Outliers Críticos =
@@ -232,44 +232,44 @@ DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )
 
 Excesso de Reclamações (atual) =
 CALCULATE (
-    SUM ( AnaliseR2Operadora[Reclamacoes] ) - SUM ( AnaliseR2Operadora[Esperado] ),
-    AnaliseR2Operadora[Elegivel] = TRUE ()
+    SUM ( Anl_R2Operadora[Reclamacoes] ) - SUM ( Anl_R2Operadora[Esperado] ),
+    Anl_R2Operadora[Elegivel] = TRUE ()
 )
 
 Índice Combinado =
 VAR _W = [Peso IGR Valor]
 RETURN
     AVERAGEX (
-        FILTER ( AnaliseR1Operadora, AnaliseR1Operadora[Elegivel] = TRUE () ),
-        _W * AnaliseR1Operadora[ScoreIGR] + ( 1 - _W ) * AnaliseR1Operadora[ScoreTR]
+        FILTER ( Anl_R1Operadora, Anl_R1Operadora[Elegivel] = TRUE () ),
+        _W * Anl_R1Operadora[ScoreIGR] + ( 1 - _W ) * Anl_R1Operadora[ScoreTR]
     )
 
 Ranking Índice (1 = melhor) =
 IF (
     NOT ISBLANK ( [Índice Combinado] ),
     RANKX (
-        FILTER ( ALLSELECTED ( DimOperadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
         [Índice Combinado], , DESC, DENSE
     )
 )
 
 Operadoras Críticas (IGR alto e TR baixa) =
 CALCULATE (
-    COUNTROWS ( AnaliseR1Operadora ),
-    AnaliseR1Operadora[Quadrante] = "Crítico: IGR alto e TR baixa"
+    COUNTROWS ( Anl_R1Operadora ),
+    Anl_R1Operadora[Quadrante] = "Crítico: IGR alto e TR baixa"
 )
 
 % Operadoras Críticas =
 DIVIDE (
     [Operadoras Críticas (IGR alto e TR baixa)],
-    CALCULATE ( COUNTROWS ( AnaliseR1Operadora ), AnaliseR1Operadora[Elegivel] = TRUE () )
+    CALCULATE ( COUNTROWS ( Anl_R1Operadora ), Anl_R1Operadora[Elegivel] = TRUE () )
 )
 ```
 - **Índice combinado**: os scores são percentis dentro do grupo assistencial (100 = melhor), já calculados no DW,
   com IGR invertido para que maior seja sempre melhor. O DAX só aplica os pesos do parâmetro, então o usuário testa
   cenários. A análise mostrou ordenação estável: Spearman ≥ 0,92 entre os pesos 30/70, 50/50 e 70/30.
   **É uma metodologia do projeto, não um indicador oficial da ANS.**
-- O ranking do índice deve ser lido **dentro de um grupo assistencial**: filtre `DimSegmento[GrupoAssistencial]`.
+- O ranking do índice deve ser lido **dentro de um grupo assistencial**: filtre `D_Segmento[GrupoAssistencial]`.
 - `Excesso de Reclamações` = observado − esperado à taxa do mercado. Mostra onde o volume "a mais" está concentrado
   e serve para priorizar ações.
 - "Críticas" têm duas definições, sempre rotuladas no visual:
@@ -281,14 +281,14 @@ DIVIDE (
 ```DAX
 Aviso Cobertura =
 IF (
-    HASONEVALUE ( DimCobertura[Cobertura] ),
+    HASONEVALUE ( D_Cobertura[Cobertura] ),
     BLANK (),
     "Selecione uma cobertura: IGR médico e odontológico têm escalas ~50× diferentes"
 )
 
 Texto Período =
-VAR _Ini = CALCULATE ( MIN ( DimTempo[DataMes] ), FatoIGR )
-VAR _Fim = CALCULATE ( MAX ( DimTempo[DataMes] ), FatoIGR )
+VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )
+VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
 
 Cor IGR vs Mercado =
@@ -296,7 +296,7 @@ IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
 
 Rótulo Fonte =
 "Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &
-FORMAT ( MAX ( DimOperadora[DtCargaDW] ), "dd/mm/yyyy" )
+FORMAT ( MAX ( D_Operadora[DtCargaDW] ), "dd/mm/yyyy" )
 ```
 - `Cor IGR vs Mercado`: em barras, Formatação condicional → Cor → *Valor do campo*.
 - `Rótulo Fonte`: num cartão de texto pequeno no rodapé de todas as páginas.
