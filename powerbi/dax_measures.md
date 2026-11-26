@@ -141,7 +141,7 @@ MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 
 
 Ranking IGR (1 = pior) =
 IF (
-    [Operadora Elegível] = 1,
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , DESC, DENSE
@@ -150,7 +150,7 @@ IF (
 
 Ranking IGR (1 = melhor) =
 IF (
-    [Operadora Elegível] = 1,
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , ASC, DENSE
@@ -169,7 +169,7 @@ Ranking no Segmento (1 = pior) =
 VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
 RETURN
     IF (
-        [Operadora Elegível] = 1,
+        HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
         RANKX (
             FILTER (
                 CALCULATETABLE (
@@ -199,6 +199,8 @@ CONCATENATEX (
 - **Elegível:** presente em todos os meses do período e com média ≥ `Benef Mínimo` (padrão 5 mil). Na análise, isso
   removeu taxas instáveis (ex.: uma operadora com 1 beneficiário e IGR 9.100.000) e manteve 99,5% dos beneficiários.
 - Rankings com `ALLSELECTED`: respeitam as segmentações (cobertura, segmento, período) e ignoram a linha do visual.
+- `HASONEVALUE ( D_Operadora[NomeExibicao] )`: o ranking só aparece na linha de uma operadora; em totais e
+  subtotais fica em branco. **Use `NomeExibicao` como linha dos visuais de ranking**: com outra coluna (ex.: `RazaoSocial`), o ranking fica em branco.
 - `IGR Relativo ao Segmento` acima de 1 = pior que o próprio segmento. Responde "quem destoa do seu segmento".
 - `Melhor Operadora` desempata pelo maior porte: muitas operadoras têm IGR = 0.
 - **Use sempre com uma única cobertura filtrada** (ver `Aviso Cobertura`).
@@ -250,7 +252,7 @@ RETURN
 
 Ranking Índice (1 = melhor) =
 IF (
-    NOT ISBLANK ( [Índice Combinado] ),
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
         [Índice Combinado], , DESC, DENSE
@@ -274,7 +276,8 @@ DIVIDE (
   cenários. A análise mostrou ordenação estável: Spearman ≥ 0,92 entre os pesos 30/70, 50/50 e 70/30.
   **É uma metodologia do projeto, não um indicador oficial da ANS.**
 - O ranking do índice deve ser lido **dentro de um grupo assistencial**: filtre `D_Segmento[GrupoAssistencial]`.
-- `Excesso de Reclamações` = observado − esperado à taxa do mercado. Mostra onde o volume "a mais" está concentrado
+- `Excesso de Reclamações` = observado − esperado à taxa do mercado. Use por operadora ou segmento: no total geral é
+  sempre 0, por definição. Mostra onde o volume "a mais" está concentrado
   e serve para priorizar ações.
 - "Críticas" têm duas definições, sempre rotuladas no visual:
   - **atual** (2025–26): outlier consistente no funil de Poisson **e** dentro do próprio segmento;

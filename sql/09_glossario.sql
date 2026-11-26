@@ -83,14 +83,14 @@ RETURN IF ( NOT ISBLANK ( _Ant ) && NOT ISBLANK ( [TR] ), ( [TR] - _Ant ) * 100 
     (19, N'Medida', N'Operadoras Elegíveis', N'4 Ranking', N'Quantidade de operadoras elegíveis no contexto.', N'Contagem de operadoras com Operadora Elegível = 1.', N'operadoras', N'Neutro', N'#,##0', NULL, N'COUNTROWS ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ) )'),
     (20, N'Medida', N'IGR Mediano (operadoras elegíveis)', N'4 Ranking', N'IGR da operadora típica: mediana dos IGRs das operadoras elegíveis.', N'Mediana do IGR por operadora entre as elegíveis.', N'reclamações por 100 mil beneficiários', N'Maior = pior', N'#,##0.00', N'Complementa o IGR agregado, que é dominado pelas grandes. Ex.: Autogestão tem agregado 50,5 e mediana 13,1.', N'MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ), [IGR] )'),
     (21, N'Medida', N'Ranking IGR (1 = pior)', N'4 Ranking', N'Posição da operadora entre as elegíveis, do maior para o menor IGR.', N'RANKX denso do IGR, decrescente, entre as operadoras elegíveis visíveis nas segmentações.', N'posição', N'1 = maior IGR', N'0', N'Use com uma única cobertura selecionada.', N'IF (
-    [Operadora Elegível] = 1,
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , DESC, DENSE
     )
 )'),
     (22, N'Medida', N'Ranking IGR (1 = melhor)', N'4 Ranking', N'Posição da operadora entre as elegíveis, do menor para o maior IGR.', N'RANKX denso do IGR, crescente, entre as operadoras elegíveis.', N'posição', N'1 = menor IGR', N'0', N'Há muitos empates em IGR = 0 no odontológico.', N'IF (
-    [Operadora Elegível] = 1,
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , ASC, DENSE
@@ -103,7 +103,7 @@ RETURN
     (25, N'Medida', N'Ranking no Segmento (1 = pior)', N'4 Ranking', N'Posição da operadora dentro do próprio segmento, do maior para o menor IGR.', N'RANKX denso entre as operadoras elegíveis do mesmo segmento.', N'posição', N'1 = maior IGR do segmento', N'0', NULL, N'VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
 RETURN
     IF (
-        [Operadora Elegível] = 1,
+        HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
         RANKX (
             FILTER (
                 CALCULATETABLE (
@@ -138,7 +138,7 @@ RETURN
     Anl_R2Operadora[Funil] = "Acima (pior)"
 )'),
     (32, N'Medida', N'% Outliers Críticos', N'6 Estatística', N'Percentual das operadoras elegíveis classificadas como outlier crítico.', N'Outliers Críticos (atual) ÷ Operadoras Elegíveis (R2).', N'%', N'Maior = pior', N'0.0%', NULL, N'DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )'),
-    (33, N'Medida', N'Excesso de Reclamações (atual)', N'6 Estatística', N'Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.', N'Σ reclamações observadas − Σ reclamações esperadas (taxa do mercado × beneficiários), entre as elegíveis.', N'reclamações', N'Maior = pior', N'#,##0', N'Útil para priorizar: mostra onde está o volume de reclamações ''a mais''.', N'CALCULATE (
+    (33, N'Medida', N'Excesso de Reclamações (atual)', N'6 Estatística', N'Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.', N'Σ reclamações observadas − Σ reclamações esperadas (taxa do mercado × beneficiários), entre as elegíveis.', N'reclamações', N'Maior = pior', N'#,##0', N'Use por operadora ou por segmento. No total geral é sempre 0 (por definição, a taxa de referência é a média das elegíveis). Útil para priorizar onde está o volume ''a mais''.', N'CALCULATE (
     SUM ( Anl_R2Operadora[Reclamacoes] ) - SUM ( Anl_R2Operadora[Esperado] ),
     Anl_R2Operadora[Elegivel] = TRUE ()
 )'),
@@ -149,7 +149,7 @@ RETURN
         _W * Anl_R1Operadora[ScoreIGR] + ( 1 - _W ) * Anl_R1Operadora[ScoreTR]
     )'),
     (35, N'Medida', N'Ranking Índice (1 = melhor)', N'6 Estatística', N'Posição da operadora pelo Índice Combinado.', N'RANKX denso decrescente entre as operadoras com índice.', N'posição', N'1 = melhor', N'0', N'Leia dentro de um grupo assistencial (filtre médico-hospitalar ou odontológico).', N'IF (
-    NOT ISBLANK ( [Índice Combinado] ),
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
         [Índice Combinado], , DESC, DENSE

@@ -134,7 +134,7 @@ MEDIDAS: dict[str, dict] = {
     "Excesso de Reclamações (atual)": dict(pasta="6 Estatística", formato=FMT_INT, unidade="reclamações", sentido="Maior = pior",
         definicao="Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.",
         calculo="Σ reclamações observadas − Σ reclamações esperadas (taxa do mercado × beneficiários), entre as elegíveis.",
-        obs="Útil para priorizar: mostra onde está o volume de reclamações 'a mais'."),
+        obs="Use por operadora ou por segmento. No total geral é sempre 0 (por definição, a taxa de referência é a média das elegíveis). Útil para priorizar onde está o volume 'a mais'."),
     "Índice Combinado": dict(pasta="6 Estatística", formato="0.0", unidade="pontos (0 a 100)", sentido="Maior = melhor",
         definicao="Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).",
         calculo="Peso × ScoreIGR + (1 − Peso) × ScoreTR. Os scores são percentis no grupo assistencial; o ScoreIGR é invertido (menor IGR = nota maior).",

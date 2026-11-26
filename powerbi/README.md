@@ -128,6 +128,15 @@ Se não baterem, confira relacionamentos e filtros.
 | idem, segmento *Cooperativa Médica* | `[IGR]` | **39,90** |
 | `SkTempo` 202501–202510, *Assistência médica* | `[IGR]` | **50,62** |
 | Linhas de `Anl_R2Operadora` com `Elegivel` = verdadeiro e cobertura médica | contagem | **511** |
+| `SkTempo` 202511–202610, *Assistência médica* | `[Operadoras com IGR]` · `[Operadoras Elegíveis]` | **679** · **511** |
+| idem | `[IGR Mediano (operadoras elegíveis)]` | **18,21** |
+| idem | `[Pior Operadora (IGR)]` · `[Melhor Operadora (IGR)]` | **AMPLA (422720)** (1.188,6) · **CENIBRA (339270)** (0,0) |
+| idem, tabela por `NomeExibicao` | `[% Acumulado das Reclamações]` na 10ª linha | **51,1%** (1ª: Bradesco Saúde, 8,3%) |
+| *Assistência médica* | `[Outliers Críticos (atual)]` · `[% Outliers Críticos]` | **20** · **3,9%** |
+| *Assistência médica*, tabela por `NomeExibicao` | `[Ranking Índice (1 = melhor)]` = 1 (peso 0,5) | **UNIMED DE LONDRINA (343269)**, índice 96,8 |
+| `SkTempo` 201805–201904 (sem cobertura) | `[TR]` | **90,22%** (`[Demandas NIP]` 100.201) |
+| `SkTempo` 201901–201904 (sem cobertura) | `[Var TR a.a. (p.p.)]` | **+1,7** |
+| `SkTempo` 202501–202510, *Assistência médica* | `[Var % IGR a.a.]` | **−14,7%** |
 | Linhas de `Anl_R1Operadora` com `Quadrante` "Crítico…" | contagem | **52** (49 médico-hospitalares + 3 odontológicas) |
 
 O "IGR do mercado" de 52,33 em `docs/resultados_analises.md` considera **só as elegíveis**, pois é a referência do

@@ -134,7 +134,7 @@ DEFINE
     // pasta: 4 Ranking | formato: 0
     MEASURE Medidas[Ranking IGR (1 = pior)] =
         IF (
-            [Operadora Elegível] = 1,
+            HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
             RANKX (
                 FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
                 [IGR], , DESC, DENSE
@@ -144,7 +144,7 @@ DEFINE
     // pasta: 4 Ranking | formato: 0
     MEASURE Medidas[Ranking IGR (1 = melhor)] =
         IF (
-            [Operadora Elegível] = 1,
+            HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
             RANKX (
                 FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
                 [IGR], , ASC, DENSE
@@ -166,7 +166,7 @@ DEFINE
         VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
         RETURN
             IF (
-                [Operadora Elegível] = 1,
+                HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
                 RANKX (
                     FILTER (
                         CALCULATETABLE (
@@ -246,7 +246,7 @@ DEFINE
     // pasta: 6 Estatística | formato: 0
     MEASURE Medidas[Ranking Índice (1 = melhor)] =
         IF (
-            NOT ISBLANK ( [Índice Combinado] ),
+            HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
             RANKX (
                 FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
                 [Índice Combinado], , DESC, DENSE

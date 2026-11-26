@@ -261,7 +261,7 @@ MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 
 ```DAX
 Ranking IGR (1 = pior) =
 IF (
-    [Operadora Elegível] = 1,
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , DESC, DENSE
@@ -277,7 +277,7 @@ IF (
 ```DAX
 Ranking IGR (1 = melhor) =
 IF (
-    [Operadora Elegível] = 1,
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
         [IGR], , ASC, DENSE
@@ -317,7 +317,7 @@ Ranking no Segmento (1 = pior) =
 VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
 RETURN
     IF (
-        [Operadora Elegível] = 1,
+        HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
         RANKX (
             FILTER (
                 CALCULATETABLE (
@@ -457,7 +457,7 @@ RETURN
 ```DAX
 Ranking Índice (1 = melhor) =
 IF (
-    NOT ISBLANK ( [Índice Combinado] ),
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
     RANKX (
         FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
         [Índice Combinado], , DESC, DENSE
