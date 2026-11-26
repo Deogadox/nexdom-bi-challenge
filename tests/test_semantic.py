@@ -36,7 +36,8 @@ def test_glossario_tem_medidas_e_conceitos_com_definicao():
     assert sum(r["Tipo"] == "Medida" for r in regs) == len(MEDIDAS)
     assert sum(r["Tipo"] == "Conceito" for r in regs) == len(CONCEITOS)
     assert all(r["Definicao"].strip() and r["Calculo"].strip() for r in regs)
-    assert len({r["Termo"] for r in regs}) == len(regs)   # termos únicos (UNIQUE no SQL)
+    # termos únicos como o SQL Server compara (collation padrão: sem diferenciar maiúsculas/minúsculas)
+    assert len({r["Termo"].casefold() for r in regs}) == len(regs)
 
 
 def test_dax_do_documento_igual_ao_catalogo():

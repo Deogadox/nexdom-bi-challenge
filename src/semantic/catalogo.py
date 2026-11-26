@@ -177,7 +177,7 @@ CONCEITOS: list[dict] = [
          calculo="DimPorte, no grão do fato (pode mudar mês a mês e entre coberturas).", obs=""),
     dict(termo="Segmento / Grupo assistencial", definicao="Segmento = modalidade da operadora no cadastro da ANS (Medicina de Grupo, Cooperativa Médica, Autogestão...). Grupo assistencial = Médico-hospitalar, Odontológico ou Administradora.",
          calculo="DimSegmento.", obs="As modalidades antigas 'Seguradora' e 'Administradora' estão agrupadas nos segmentos atuais (marcadas como legado)."),
-    dict(termo="Operadora elegível", definicao="Operadora com dado em todos os meses do período e média de pelo menos 5 mil beneficiários (no R1, também ≥ 30 demandas NIP).",
+    dict(termo="Elegibilidade (critério)", definicao="Operadora com dado em todos os meses do período e média de pelo menos 5 mil beneficiários (no R1, também ≥ 30 demandas NIP).",
          calculo="Medida Operadora Elegível / coluna Elegivel das tabelas de análise.", obs="Evita que operadoras minúsculas, com taxas instáveis, dominem rankings."),
     dict(termo="Funil de Poisson", definicao="Método que compara a taxa de cada operadora com a do mercado, com limites que se estreitam conforme o porte aumenta.",
          calculo="Esperado = taxa do mercado × beneficiários; limites de 99,8% ajustados por sobredispersão (Spiegelhalter, 2005).",
