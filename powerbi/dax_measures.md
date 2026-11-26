@@ -1,7 +1,10 @@
 # Medidas DAX
 
-Crie uma tabela vazia `_Medidas` (Inserir dados → tabela em branco) para agrupar as medidas e use as **pastas de
-exibição** indicadas. Convenções: taxa = **soma/soma** (nunca a média de taxas), `DIVIDE` em toda divisão e variáveis
+**Tabela de medidas:** Página Inicial → *Inserir dados* → nome `Medidas` → *Carregar* (sem preencher). Crie todas as
+medidas nela (botão direito → *Nova medida*) e, depois da primeira, exclua a `Coluna1`. A tabela vira tabela de
+medidas (ícone de calculadora). Pastas de exibição: Exibição de modelo → selecione as medidas → *Propriedades →
+Pasta de exibição* com os nomes das seções abaixo (`0 Parâmetros`, `1 IGR` … `7 UX`). As tabelas dos parâmetros
+continuam existindo, porque a segmentação depende delas; só as medidas "Valor" vão para `Medidas`. Convenções: taxa = **soma/soma** (nunca a média de taxas), `DIVIDE` em toda divisão e variáveis
 com prefixo `_`.
 
 Referências oficiais: IGR = reclamações ÷ beneficiários × 100 mil (**maior = pior**);
@@ -9,7 +12,7 @@ TR = (Inativa + NP + RVE) ÷ (Inativa + NP + RVE + Núcleo) (**maior = melhor**)
 
 ---
 
-## 0. Parâmetros de cenário (Modelagem → Novo parâmetro → Intervalo numérico)
+## 0. Parâmetros de cenário  (pasta `0 Parâmetros`; Modelagem → Novo parâmetro → Intervalo numérico)
 
 | Parâmetro | Intervalo | Padrão | Uso |
 |---|---|---|---|
