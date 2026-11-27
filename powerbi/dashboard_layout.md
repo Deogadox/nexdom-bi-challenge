@@ -17,6 +17,25 @@ Nenhum gráfico com dois eixos y.
 
 ---
 
+## Estrutura revisada (sem limite de páginas)
+
+Cada página responde **uma pergunta** e usa **um recorte** de dados. As páginas não misturam o recorte atual (IGR
+nov/2025–out/2026) com o de 2018–19 (IGR × TR):
+
+| # | Página | Pergunta | Recorte |
+|---|---|---|---|
+| 1 | Visão Executiva | Como está o mercado e onde estão os problemas? | atual |
+| 2 | Ranking de Operadoras | Quem tem o pior e o melhor IGR, no geral e no próprio segmento? | atual |
+| 3 | IGR × Resolutividade | Quem tem IGR alto e TR baixa? Ranking combinado (P2, A1) | mai/2018–abr/2019 |
+| 4 | Porte, Correlações e Outliers | O porte explica? Quem foge do padrão? (P3, A2, A3) | atual (+ correlações R1) |
+| 5 | Segmentos | Quais segmentos são melhores/piores e quão homogêneos? (A5) | atual |
+| 6 | Evolução Temporal | Como os indicadores evoluíram? (A4) | 2015–2026 |
+| 7 | Ficha da Operadora (drill-through) | Tudo sobre uma operadora: histórico, segmento, TR | todos |
+| 8 | Notas metodológicas | — | — |
+| 9 | Glossário | — | — |
+
+As seções abaixo detalham o conteúdo; onde a numeração antiga diverge, vale esta tabela.
+
 ## Página 1 — Visão Executiva
 **Pergunta:** como está o mercado agora e onde estão os problemas?
 
