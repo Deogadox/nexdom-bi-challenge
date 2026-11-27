@@ -82,24 +82,28 @@ RETURN IF ( NOT ISBLANK ( _Ant ) && NOT ISBLANK ( [TR] ), ( [TR] - _Ant ) * 100 
 )'),
     (19, N'Medida', N'Operadoras Elegíveis', N'4 Ranking', N'Quantidade de operadoras elegíveis no contexto.', N'Contagem de operadoras com Operadora Elegível = 1.', N'operadoras', N'Neutro', N'#,##0', NULL, N'COUNTROWS ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ) )'),
     (20, N'Medida', N'IGR Mediano (operadoras elegíveis)', N'4 Ranking', N'IGR da operadora típica: mediana dos IGRs das operadoras elegíveis.', N'Mediana do IGR por operadora entre as elegíveis.', N'reclamações por 100 mil beneficiários', N'Maior = pior', N'#,##0.00', N'Complementa o IGR agregado, que é dominado pelas grandes. Ex.: Autogestão tem agregado 50,5 e mediana 13,1.', N'MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ), [IGR] )'),
-    (21, N'Medida', N'Ranking IGR (1 = pior)', N'4 Ranking', N'Posição da operadora entre as elegíveis, do maior para o menor IGR.', N'RANKX denso do IGR, decrescente, entre as operadoras elegíveis visíveis nas segmentações.', N'posição', N'1 = maior IGR', N'0', N'Use com uma única cobertura selecionada.', N'IF (
+    (21, N'Medida', N'Ranking IGR (1 = pior)', N'4 Ranking', N'Posição da operadora entre as elegíveis, do maior para o menor IGR.', N'RANKX denso do IGR, decrescente, entre as operadoras elegíveis visíveis nas segmentações.', N'posição', N'1 = maior IGR', N'0', N'Use com uma única cobertura selecionada.', N'VAR _Val = [IGR]
+RETURN
+IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-            [IGR], , DESC, DENSE
+            [IGR], _Val, DESC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )'),
-    (22, N'Medida', N'Ranking IGR (1 = melhor)', N'4 Ranking', N'Posição da operadora entre as elegíveis, do menor para o maior IGR.', N'RANKX denso do IGR, crescente, entre as operadoras elegíveis.', N'posição', N'1 = menor IGR', N'0', N'Há muitos empates em IGR = 0 no odontológico.', N'IF (
+    (22, N'Medida', N'Ranking IGR (1 = melhor)', N'4 Ranking', N'Posição da operadora entre as elegíveis, do menor para o maior IGR.', N'RANKX denso do IGR, crescente, entre as operadoras elegíveis.', N'posição', N'1 = menor IGR', N'0', N'Há muitos empates em IGR = 0 no odontológico.', N'VAR _Val = [IGR]
+RETURN
+IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-            [IGR], , ASC, DENSE
+            [IGR], _Val, ASC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )'),
     (23, N'Medida', N'IGR do Segmento', N'4 Ranking', N'IGR agregado do segmento (modalidade) a que a operadora pertence.', N'IGR removendo o filtro de operadora e mantendo o segmento da operadora em contexto.', N'reclamações por 100 mil beneficiários', N'Maior = pior', N'#,##0.00', NULL, N'VAR _Seg = SELECTEDVALUE ( D_Operadora[SkSegmento] )
@@ -131,15 +135,12 @@ RETURN
            [IGR], ASC, [Beneficiários Médios], DESC ),
     D_Operadora[NomeExibicao], ", "
 )'),
-    (28, N'Medida', N'% das Reclamações', N'5 Concentração', N'Participação da operadora (ou do segmento) no total de reclamações selecionado.', N'Reclamações ÷ Reclamações de todas as operadoras visíveis.', N'%', N'Neutro', N'0.0%', NULL, N'DIVIDE (
-    [Reclamações],
-    CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ), ALLSELECTED ( D_Segmento ) )
-)'),
+    (28, N'Medida', N'% das Reclamações', N'5 Concentração', N'Participação da operadora (ou do segmento) no total de reclamações selecionado.', N'Reclamações ÷ Reclamações de todas as operadoras visíveis.', N'%', N'Neutro', N'0.0%', NULL, N'DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )'),
     (29, N'Medida', N'% Acumulado das Reclamações', N'5 Concentração', N'Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).', N'Soma das reclamações das operadoras com volume ≥ ao da linha ÷ total.', N'%', N'Neutro', N'0.0%', N'As 10 maiores concentram 52% das reclamações médicas nos últimos 12 meses.', N'VAR _Atual = [Reclamações]
 VAR _Tab =
     CALCULATETABLE (
         ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )'),
@@ -160,14 +161,16 @@ RETURN
         FILTER ( Anl_R1Operadora, Anl_R1Operadora[Elegivel] = TRUE () ),
         _W * Anl_R1Operadora[ScoreIGR] + ( 1 - _W ) * Anl_R1Operadora[ScoreTR]
     )'),
-    (35, N'Medida', N'Ranking Índice (1 = melhor)', N'6 Estatística', N'Posição da operadora pelo Índice Combinado.', N'RANKX denso decrescente entre as operadoras com índice.', N'posição', N'1 = melhor', N'0', N'Leia dentro de um grupo assistencial (filtre médico-hospitalar ou odontológico).', N'IF (
+    (35, N'Medida', N'Ranking Índice (1 = melhor)', N'6 Estatística', N'Posição da operadora pelo Índice Combinado.', N'RANKX denso decrescente entre as operadoras com índice.', N'posição', N'1 = melhor', N'0', N'Leia dentro de um grupo assistencial (filtre médico-hospitalar ou odontológico).', N'VAR _Val = [Índice Combinado]
+RETURN
+IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
-            [Índice Combinado], , DESC, DENSE
+            [Índice Combinado], _Val, DESC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )'),
     (36, N'Medida', N'Operadoras Críticas (IGR alto e TR baixa)', N'6 Estatística', N'Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).', N'Contagem com Quadrante = ''Crítico: IGR alto e TR baixa''.', N'operadoras', N'Maior = pior', N'#,##0', N'49 médico-hospitalares e 3 odontológicas.', N'CALCULATE (

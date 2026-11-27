@@ -260,14 +260,16 @@ MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 
 
 ```DAX
 Ranking IGR (1 = pior) =
+VAR _Val = [IGR]
+RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-            [IGR], , DESC, DENSE
+            [IGR], _Val, DESC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )
 ```
@@ -279,14 +281,16 @@ IF (
 
 ```DAX
 Ranking IGR (1 = melhor) =
+VAR _Val = [IGR]
+RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-            [IGR], , ASC, DENSE
+            [IGR], _Val, ASC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )
 ```
@@ -374,10 +378,7 @@ CONCATENATEX (
 
 ```DAX
 % das Reclamações =
-DIVIDE (
-    [Reclamações],
-    CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ), ALLSELECTED ( D_Segmento ) )
-)
+DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )
 ```
 
 ### 29. % Acumulado das Reclamações
@@ -391,7 +392,7 @@ VAR _Atual = [Reclamações]
 VAR _Tab =
     CALCULATETABLE (
         ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
@@ -468,14 +469,16 @@ RETURN
 
 ```DAX
 Ranking Índice (1 = melhor) =
+VAR _Val = [Índice Combinado]
+RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
-            [Índice Combinado], , DESC, DENSE
+            [Índice Combinado], _Val, DESC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )
 ```

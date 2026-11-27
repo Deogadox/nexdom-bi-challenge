@@ -140,26 +140,30 @@ IGR Mediano (operadoras elegíveis) =
 MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 1 ), [IGR] )
 
 Ranking IGR (1 = pior) =
+VAR _Val = [IGR]
+RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-            [IGR], , DESC, DENSE
+            [IGR], _Val, DESC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )
 
 Ranking IGR (1 = melhor) =
+VAR _Val = [IGR]
+RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-            [IGR], , ASC, DENSE
+            [IGR], _Val, ASC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )
 
@@ -205,8 +209,9 @@ CONCATENATEX (
 - **Elegível:** presente em todos os meses do período e com média ≥ `Benef Mínimo` (padrão 5 mil). Na análise, isso
   removeu taxas instáveis (ex.: uma operadora com 1 beneficiário e IGR 9.100.000) e manteve 99,5% dos beneficiários.
 - Rankings com `ALLSELECTED`: respeitam as segmentações (cobertura, segmento, período) e ignoram a linha do visual.
-  O `CALCULATE ( …, ALLSELECTED ( D_Segmento ) )` faz o mesmo com a coluna `Segmento` quando ela está na tabela:
-  sem ele, cada linha só enxergaria as operadoras do próprio segmento e o ranking viraria "ranking no segmento".
+  O `CALCULATE ( …, ALLSELECTED () )` tira também os filtros das outras colunas da linha (ex.: `Segmento`) e mantém só
+  as segmentações; sem ele, cada linha só enxergaria as operadoras do próprio segmento. O valor da linha é guardado
+  antes em `_Val` (3º argumento do `RANKX`). `ALLSELECTED ( D_Segmento )` sozinho não bastou na prática (validado no PBI).
 - `HASONEVALUE ( D_Operadora[NomeExibicao] )`: o ranking só aparece na linha de uma operadora; em totais e
   subtotais fica em branco. **Use `NomeExibicao` como linha dos visuais de ranking**: com outra coluna (ex.: `RazaoSocial`), o ranking fica em branco.
 - `IGR Relativo ao Segmento` acima de 1 = pior que o próprio segmento. Responde "quem destoa do seu segmento".
@@ -217,17 +222,14 @@ CONCATENATEX (
 
 ```DAX
 % das Reclamações =
-DIVIDE (
-    [Reclamações],
-    CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ), ALLSELECTED ( D_Segmento ) )
-)
+DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )
 
 % Acumulado das Reclamações =
 VAR _Atual = [Reclamações]
 VAR _Tab =
     CALCULATETABLE (
         ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
@@ -265,14 +267,16 @@ RETURN
     )
 
 Ranking Índice (1 = melhor) =
+VAR _Val = [Índice Combinado]
+RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
     CALCULATE (
         RANKX (
             FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
-            [Índice Combinado], , DESC, DENSE
+            [Índice Combinado], _Val, DESC, DENSE
         ),
-        ALLSELECTED ( D_Segmento )
+        ALLSELECTED ()
     )
 )
 
