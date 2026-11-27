@@ -33,10 +33,6 @@
   "Outliers Críticos (atual)": "CALCULATE (\n    COUNTROWS ( Anl_R2Operadora ),\n    Anl_R2Operadora[OutlierConsistente] = TRUE (),\n    Anl_R2Operadora[Funil] = \"Acima (pior)\"\n)",
   "% Outliers Críticos": "DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )",
   "Excesso de Reclamações (atual)": "CALCULATE (\n    SUM ( Anl_R2Operadora[Reclamacoes] ) - SUM ( Anl_R2Operadora[Esperado] ),\n    Anl_R2Operadora[Elegivel] = TRUE ()\n)",
-  "Excesso Positivo": "CALCULATE (\n    SUMX ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado] ),\n    REMOVEFILTERS ( D_Operadora )\n)",
-  "Operadoras Acima do Esperado": "CALCULATE (\n    COUNTROWS ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ) ),\n    REMOVEFILTERS ( D_Operadora )\n)",
-  "Excesso Top 15": "CALCULATE (\n    SUMX (\n        TOPN ( 15, FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado], DESC ),\n        Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado]\n    ),\n    REMOVEFILTERS ( D_Operadora )\n)",
-  "% do Excesso no Top 15": "DIVIDE ( [Excesso Top 15], [Excesso Positivo] )",
   "Índice Combinado": "VAR _W = [Peso IGR Valor]\nRETURN\n    AVERAGEX (\n        FILTER ( Anl_R1Operadora, Anl_R1Operadora[Elegivel] = TRUE () ),\n        _W * Anl_R1Operadora[ScoreIGR] + ( 1 - _W ) * Anl_R1Operadora[ScoreTR]\n    )",
   "Ranking Índice (1 = melhor)": "VAR _Val = [Índice Combinado]\nRETURN\nIF (\n    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),\n    CALCULATE (\n        RANKX (\n            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),\n            [Índice Combinado], _Val, DESC, DENSE\n        ),\n        ALLSELECTED ()\n    )\n)",
   "Ranking Índice (1 = pior)": "VAR _Val = [Índice Combinado]\nRETURN\nIF (\n    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),\n    CALCULATE (\n        RANKX (\n            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),\n            [Índice Combinado], _Val, ASC, DENSE\n        ),\n        ALLSELECTED ()\n    )\n)",
@@ -45,7 +41,5 @@
   "Aviso Cobertura": "IF (\n    HASONEVALUE ( D_Cobertura[Cobertura] ),\n    BLANK (),\n    \"Selecione uma cobertura: IGR médico e odontológico têm escalas ~50× diferentes\"\n)",
   "Texto Período": "VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )\nVAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )\nRETURN \"IGR de \" & FORMAT ( _Ini, \"mmm/yyyy\" ) & \" a \" & FORMAT ( _Fim, \"mmm/yyyy\" )",
   "Cor IGR vs Mercado": "IF ( [IGR] > [IGR Mercado], \"#FF7F40\", \"#045F51\" )",
-  "Título Excesso": "\"15 operadoras respondem por \" & FORMAT ( [% do Excesso no Top 15], \"0%\" ) &\n\" das reclamações acima do esperado\"",
-  "Subtítulo Excesso": "FORMAT ( [Operadoras Acima do Esperado], \"#,##0\" ) & \" operadoras ficam acima do esperado e somam \" &\nFORMAT ( [Excesso Positivo], \"#,##0\" ) & \" reclamações a mais; as 15 primeiras, \" &\nFORMAT ( [Excesso Top 15], \"#,##0\" ) & \".\"",
   "Rótulo Fonte": "\"Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: \" &\nFORMAT ( MAX ( D_Operadora[DtCargaDW] ), \"dd/mm/yyyy\" )"
 }
