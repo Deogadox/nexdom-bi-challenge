@@ -457,7 +457,59 @@ CALCULATE (
 )
 ```
 
-### 35. Índice Combinado
+### 35. Excesso Positivo
+
+- **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
+- **Descrição:** Soma do excesso de reclamações só das operadoras acima do esperado.
+
+```DAX
+Excesso Positivo =
+CALCULATE (
+    SUMX ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado] ),
+    REMOVEFILTERS ( D_Operadora )
+)
+```
+
+### 36. Operadoras Acima do Esperado
+
+- **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
+- **Descrição:** Quantidade de operadoras elegíveis com reclamações acima do esperado.
+
+```DAX
+Operadoras Acima do Esperado =
+CALCULATE (
+    COUNTROWS ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ) ),
+    REMOVEFILTERS ( D_Operadora )
+)
+```
+
+### 37. Excesso Top 15
+
+- **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
+- **Descrição:** Excesso de reclamações somado das 15 operadoras com maior excesso.
+
+```DAX
+Excesso Top 15 =
+CALCULATE (
+    SUMX (
+        TOPN ( 15, FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado], DESC ),
+        Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado]
+    ),
+    REMOVEFILTERS ( D_Operadora )
+)
+```
+
+### 38. % do Excesso no Top 15
+
+- **Pasta:** `6 Estatística` · **Formato:** `0.0%` · **Leitura:** Neutro
+- **Descrição:** Participação das 15 operadoras com maior excesso no excesso total.
+
+```DAX
+% do Excesso no Top 15 =
+DIVIDE ( [Excesso Top 15], [Excesso Positivo] )
+```
+
+### 39. Índice Combinado
 
 - **Pasta:** `6 Estatística` · **Formato:** `0.0` · **Leitura:** Maior = melhor
 - **Descrição:** Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).
@@ -472,7 +524,7 @@ RETURN
     )
 ```
 
-### 36. Ranking Índice (1 = melhor)
+### 40. Ranking Índice (1 = melhor)
 
 - **Pasta:** `6 Estatística` · **Formato:** `0` · **Leitura:** 1 = melhor
 - **Descrição:** Posição da operadora pelo Índice Combinado.
@@ -493,7 +545,7 @@ IF (
 )
 ```
 
-### 37. Ranking Índice (1 = pior)
+### 41. Ranking Índice (1 = pior)
 
 - **Pasta:** `6 Estatística` · **Formato:** `0` · **Leitura:** 1 = pior
 - **Descrição:** Posição da operadora pelo Índice Combinado, do menor para o maior índice.
@@ -514,7 +566,7 @@ IF (
 )
 ```
 
-### 38. Operadoras Críticas (IGR alto e TR baixa)
+### 42. Operadoras Críticas (IGR alto e TR baixa)
 
 - **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
 - **Descrição:** Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).
@@ -527,7 +579,7 @@ CALCULATE (
 )
 ```
 
-### 39. % Operadoras Críticas
+### 43. % Operadoras Críticas
 
 - **Pasta:** `6 Estatística` · **Formato:** `0.0%` · **Leitura:** Maior = pior
 - **Descrição:** Percentual das operadoras elegíveis do recorte 2018–19 no quadrante crítico.
@@ -542,7 +594,7 @@ DIVIDE (
 
 ## Pasta `7 UX`
 
-### 40. Aviso Cobertura
+### 44. Aviso Cobertura
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Mensagem exibida quando mais de uma cobertura está selecionada.
@@ -556,7 +608,7 @@ IF (
 )
 ```
 
-### 41. Texto Período
+### 45. Texto Período
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Período do IGR efetivamente exibido, para títulos dinâmicos.
@@ -568,7 +620,7 @@ VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
 ```
 
-### 42. Cor IGR vs Mercado
+### 46. Cor IGR vs Mercado
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Cor para formatação condicional: laranja NEXDOM (#FF7F40) se o IGR está acima do mercado, verde Excelência (#045F51) se está abaixo.
@@ -578,7 +630,30 @@ Cor IGR vs Mercado =
 IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )
 ```
 
-### 43. Rótulo Fonte
+### 47. Título Excesso
+
+- **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
+- **Descrição:** Título dinâmico do gráfico de reclamações acima do esperado.
+
+```DAX
+Título Excesso =
+"15 operadoras respondem por " & FORMAT ( [% do Excesso no Top 15], "0%" ) &
+" das reclamações acima do esperado"
+```
+
+### 48. Subtítulo Excesso
+
+- **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
+- **Descrição:** Subtítulo dinâmico com o total de operadoras e de reclamações acima do esperado.
+
+```DAX
+Subtítulo Excesso =
+FORMAT ( [Operadoras Acima do Esperado], "#,##0" ) & " operadoras ficam acima do esperado e somam " &
+FORMAT ( [Excesso Positivo], "#,##0" ) & " reclamações a mais; as 15 primeiras, " &
+FORMAT ( [Excesso Top 15], "#,##0" ) & "."
+```
+
+### 49. Rótulo Fonte
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Texto de rodapé com as fontes e a data da última carga do DW.

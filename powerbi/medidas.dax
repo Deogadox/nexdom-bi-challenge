@@ -250,6 +250,34 @@ DEFINE
             SUM ( Anl_R2Operadora[Reclamacoes] ) - SUM ( Anl_R2Operadora[Esperado] ),
             Anl_R2Operadora[Elegivel] = TRUE ()
         )
+    /// Soma do excesso de reclamações só das operadoras acima do esperado.
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Excesso Positivo] =
+        CALCULATE (
+            SUMX ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado] ),
+            REMOVEFILTERS ( D_Operadora )
+        )
+    /// Quantidade de operadoras elegíveis com reclamações acima do esperado.
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Operadoras Acima do Esperado] =
+        CALCULATE (
+            COUNTROWS ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ) ),
+            REMOVEFILTERS ( D_Operadora )
+        )
+    /// Excesso de reclamações somado das 15 operadoras com maior excesso.
+    // pasta: 6 Estatística | formato: #,##0
+    MEASURE Medidas[Excesso Top 15] =
+        CALCULATE (
+            SUMX (
+                TOPN ( 15, FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado], DESC ),
+                Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado]
+            ),
+            REMOVEFILTERS ( D_Operadora )
+        )
+    /// Participação das 15 operadoras com maior excesso no excesso total.
+    // pasta: 6 Estatística | formato: 0.0%
+    MEASURE Medidas[% do Excesso no Top 15] =
+        DIVIDE ( [Excesso Top 15], [Excesso Positivo] )
     /// Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).
     // pasta: 6 Estatística | formato: 0.0
     MEASURE Medidas[Índice Combinado] =
@@ -323,6 +351,17 @@ DEFINE
     // pasta: 7 UX | formato: (texto)
     MEASURE Medidas[Cor IGR vs Mercado] =
         IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )
+    /// Título dinâmico do gráfico de reclamações acima do esperado.
+    // pasta: 7 UX | formato: (texto)
+    MEASURE Medidas[Título Excesso] =
+        "15 operadoras respondem por " & FORMAT ( [% do Excesso no Top 15], "0%" ) &
+        " das reclamações acima do esperado"
+    /// Subtítulo dinâmico com o total de operadoras e de reclamações acima do esperado.
+    // pasta: 7 UX | formato: (texto)
+    MEASURE Medidas[Subtítulo Excesso] =
+        FORMAT ( [Operadoras Acima do Esperado], "#,##0" ) & " operadoras ficam acima do esperado e somam " &
+        FORMAT ( [Excesso Positivo], "#,##0" ) & " reclamações a mais; as 15 primeiras, " &
+        FORMAT ( [Excesso Top 15], "#,##0" ) & "."
     /// Texto de rodapé com as fontes e a data da última carga do DW.
     // pasta: 7 UX | formato: (texto)
     MEASURE Medidas[Rótulo Fonte] =

@@ -265,6 +265,30 @@ CALCULATE (
     Anl_R2Operadora[Elegivel] = TRUE ()
 )
 
+Excesso Positivo =
+CALCULATE (
+    SUMX ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado] ),
+    REMOVEFILTERS ( D_Operadora )
+)
+
+Operadoras Acima do Esperado =
+CALCULATE (
+    COUNTROWS ( FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () && Anl_R2Operadora[Reclamacoes] > Anl_R2Operadora[Esperado] ) ),
+    REMOVEFILTERS ( D_Operadora )
+)
+
+Excesso Top 15 =
+CALCULATE (
+    SUMX (
+        TOPN ( 15, FILTER ( Anl_R2Operadora, Anl_R2Operadora[Elegivel] = TRUE () ), Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado], DESC ),
+        Anl_R2Operadora[Reclamacoes] - Anl_R2Operadora[Esperado]
+    ),
+    REMOVEFILTERS ( D_Operadora )
+)
+
+% do Excesso no Top 15 =
+DIVIDE ( [Excesso Top 15], [Excesso Positivo] )
+
 Índice Combinado =
 VAR _W = [Peso IGR Valor]
 RETURN
@@ -346,6 +370,15 @@ IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )
 Rótulo Fonte =
 "Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &
 FORMAT ( MAX ( D_Operadora[DtCargaDW] ), "dd/mm/yyyy" )
+
+Título Excesso =
+"15 operadoras respondem por " & FORMAT ( [% do Excesso no Top 15], "0%" ) &
+" das reclamações acima do esperado"
+
+Subtítulo Excesso =
+FORMAT ( [Operadoras Acima do Esperado], "#,##0" ) & " operadoras ficam acima do esperado e somam " &
+FORMAT ( [Excesso Positivo], "#,##0" ) & " reclamações a mais; as 15 primeiras, " &
+FORMAT ( [Excesso Top 15], "#,##0" ) & "."
 ```
 - `Cor IGR vs Mercado`: em barras, Formatação condicional → Cor → *Valor do campo*.
 - `Rótulo Fonte`: num cartão de texto pequeno no rodapé de todas as páginas.
