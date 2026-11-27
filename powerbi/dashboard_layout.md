@@ -25,7 +25,7 @@ nov/2025–out/2026) com o de 2018–19 (IGR × TR):
 | # | Página | Pergunta | Recorte |
 |---|---|---|---|
 | 1 | Visão Executiva | Como está o mercado e onde estão os problemas? | atual |
-| 2 | Ranking de Operadoras | Quem tem o pior e o melhor IGR, no geral e no próprio segmento? | atual |
+| 2 | Impacto das Operadoras | Quem gera mais reclamações além do esperado? Quem se destaca em cada segmento? | atual |
 | 3 | IGR × Resolutividade | Quem tem IGR alto e TR baixa? Ranking combinado (P2, A1) | mai/2018–abr/2019 |
 | 4 | Porte, Correlações e Outliers | O porte explica? Quem foge do padrão? (P3, A2, A3) | atual (+ correlações R1) |
 | 5 | Segmentos | Quais segmentos são melhores/piores e quão homogêneos? (A5) | atual |
@@ -50,17 +50,21 @@ As seções abaixo detalham o conteúdo; onde a numeração antiga diverge, vale
 **Mensagem esperada (dados reais):** IGR médico de 53,9 nos últimos 12 meses, 20 outliers críticos, as Seguradoras
 com o maior IGR agregado (74,2) e as 10 maiores operadoras concentrando 52% das reclamações.
 
-## Página 2 — Desempenho das Operadoras
-**Pergunta:** quem tem os piores e os melhores indicadores, e quem é crítico em IGR e TR?
+## Página 2 — Impacto das Operadoras (recorte atual)
+**Pergunta:** quais operadoras geram mais reclamações *além do esperado* para o seu porte, e quem se destaca em cada
+segmento? A página 1 já mostra o ranking por taxa (IGR); aqui o foco é o **impacto em volume** e o **destaque por segmento**.
 
 | Visual | Campos / medidas | Observação |
 |---|---|---|
-| Duas tabelas lado a lado | "10 piores" e "10 melhores" IGR (Top N por `[IGR]` desc/asc, só elegíveis) | Colunas: Operadora, Segmento, Porte, `[Beneficiários Médios]`, `[IGR]`, `[IGR Relativo ao Segmento]` (barra de dados) |
-| Matriz | Linhas `D_Segmento[Segmento]` → `D_Operadora[NomeExibicao]`; valores `[IGR]`, `[Ranking no Segmento (1 = pior)]`, `[Var % IGR a.a.]` | Ícones na variação |
-| Seção "Índice combinado IGR × TR (mai/2018–abr/2019)" com fundo levemente diferente e o aviso "TR não é publicada pela ANS após 2019-10" | | |
-| Segmentação do parâmetro | `'Peso IGR'` (controle deslizante) | O usuário testa os pesos |
-| Tabela | `NomeExibicao`, `Anl_R1Operadora[IGR]`, `[TRGeral]`, `[Índice Combinado]`, `[Ranking Índice (1 = melhor)]`, `[Quadrante]` | Filtro de página `GrupoAssistencial = Médico-hospitalar`. Formatação condicional no Quadrante |
-| Cartões | `[Operadoras Críticas (IGR alto e TR baixa)]` · `[% Operadoras Críticas]` | |
+| 3 cartões | `[Operadoras Elegíveis]` · `[IGR Mediano (operadoras elegíveis)]` · `[IGR]` ("IGR do mercado") | 511 · 18,21 · 53,86 |
+| Barras horizontais "Reclamações acima do esperado" | Eixo `D_Operadora[NomeExibicao]`, valor `[Excesso de Reclamações (atual)]` | Filtro do visual: N superior 15 por `[Excesso de Reclamações (atual)]`. Cor `#FF7F40`, rótulos de dados. Tooltip: `Segmento`, `[IGR]`, `[Beneficiários Médios]` |
+| Barras horizontais "Reclamações abaixo do esperado" | Igual, com N **inferior** 15 | Cor `#045F51`. Valores negativos (barras para a esquerda) |
+| Tabela "Destaques por segmento" (5 linhas) | `D_Segmento[Segmento]`, `[Operadoras Elegíveis]`, `[IGR]`, `[IGR Mediano (operadoras elegíveis)]`, `[Pior Operadora (IGR)]`, `[Melhor Operadora (IGR)]` | Sem hierarquia. Substitui a matriz com expansão (nomes demais) |
+
+**Esperado** = reclamações que a operadora teria com o IGR do mercado (52,33, só elegíveis) e os próprios beneficiários.
+O total do excesso é 0 por construção; o positivo soma 83.050 em 96 operadoras, e as 15 primeiras respondem por 58.890 (71%).
+Valores: SulAmérica +10.400 · Bradesco +7.709 · SELECT +7.521 · Hapvida NotreDame SP/RJ +7.518 · GEAP +5.611;
+abaixo: Hapvida −3.972 · Unimed Porto Alegre −2.436 · IPASGO −2.325 · APPAI −2.265.
 
 ## Página 3 — Correlações, Porte e Outliers
 **Pergunta:** o porte explica as reclamações e a resolutividade? Quem foge do padrão?
