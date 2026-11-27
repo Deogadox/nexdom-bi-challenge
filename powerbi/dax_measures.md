@@ -341,7 +341,7 @@ VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
 
 Cor IGR vs Mercado =
-IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
+IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )
 
 Rótulo Fonte =
 "Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &

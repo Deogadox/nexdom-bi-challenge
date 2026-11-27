@@ -571,11 +571,11 @@ RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyy
 ### 42. Cor IGR vs Mercado
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
-- **Descrição:** Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.
+- **Descrição:** Cor para formatação condicional: laranja NEXDOM (#FF7F40) se o IGR está acima do mercado, verde Excelência (#045F51) se está abaixo.
 
 ```DAX
 Cor IGR vs Mercado =
-IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
+IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )
 ```
 
 ### 43. Rótulo Fonte

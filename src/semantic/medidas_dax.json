@@ -40,6 +40,6 @@
   "% Operadoras Críticas": "DIVIDE (\n    [Operadoras Críticas (IGR alto e TR baixa)],\n    CALCULATE ( COUNTROWS ( Anl_R1Operadora ), Anl_R1Operadora[Elegivel] = TRUE () )\n)",
   "Aviso Cobertura": "IF (\n    HASONEVALUE ( D_Cobertura[Cobertura] ),\n    BLANK (),\n    \"Selecione uma cobertura: IGR médico e odontológico têm escalas ~50× diferentes\"\n)",
   "Texto Período": "VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )\nVAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )\nRETURN \"IGR de \" & FORMAT ( _Ini, \"mmm/yyyy\" ) & \" a \" & FORMAT ( _Fim, \"mmm/yyyy\" )",
-  "Cor IGR vs Mercado": "IF ( [IGR] > [IGR Mercado], \"#f47230\", \"#257de0\" )",
+  "Cor IGR vs Mercado": "IF ( [IGR] > [IGR Mercado], \"#FF7F40\", \"#045F51\" )",
   "Rótulo Fonte": "\"Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: \" &\nFORMAT ( MAX ( D_Operadora[DtCargaDW] ), \"dd/mm/yyyy\" )"
 }

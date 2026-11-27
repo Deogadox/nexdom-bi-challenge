@@ -163,7 +163,7 @@ MEDIDAS: dict[str, dict] = {
     "Texto Período": dict(pasta="7 UX", formato="", unidade="texto", sentido="—",
         definicao="Período do IGR efetivamente exibido, para títulos dinâmicos.", calculo="Primeiro e último mês com dado de IGR no contexto.", obs=""),
     "Cor IGR vs Mercado": dict(pasta="7 UX", formato="", unidade="código de cor", sentido="—",
-        definicao="Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.",
+        definicao="Cor para formatação condicional: laranja NEXDOM (#FF7F40) se o IGR está acima do mercado, verde Excelência (#045F51) se está abaixo.",
         calculo="Compara IGR com IGR Mercado.", obs="Use em Formatação condicional → Cor → Valor do campo."),
     "Rótulo Fonte": dict(pasta="7 UX", formato="", unidade="texto", sentido="—",
         definicao="Texto de rodapé com as fontes e a data da última carga do DW.", calculo="Texto fixo + maior DtCargaDW.", obs=""),

@@ -86,7 +86,7 @@ O código DAX de cada medida está em [`powerbi/medidas.dax`](../powerbi/medidas
 |---|---|---|---|---|---|
 | **Aviso Cobertura** | Mensagem exibida quando mais de uma cobertura está selecionada. | Texto quando não há exatamente uma cobertura no filtro; vazio caso contrário. | texto | — | Evita misturar IGR médico e odontológico, que têm escalas cerca de 50 vezes diferentes. |
 | **Texto Período** | Período do IGR efetivamente exibido, para títulos dinâmicos. | Primeiro e último mês com dado de IGR no contexto. | texto | — |  |
-| **Cor IGR vs Mercado** | Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo. | Compara IGR com IGR Mercado. | código de cor | — | Use em Formatação condicional → Cor → Valor do campo. |
+| **Cor IGR vs Mercado** | Cor para formatação condicional: laranja NEXDOM (#FF7F40) se o IGR está acima do mercado, verde Excelência (#045F51) se está abaixo. | Compara IGR com IGR Mercado. | código de cor | — | Use em Formatação condicional → Cor → Valor do campo. |
 | **Rótulo Fonte** | Texto de rodapé com as fontes e a data da última carga do DW. | Texto fixo + maior DtCargaDW. | texto | — |  |
 
 ## Conceitos

@@ -202,7 +202,7 @@ IF (
     (41, N'Medida', N'Texto Período', N'7 UX', N'Período do IGR efetivamente exibido, para títulos dinâmicos.', N'Primeiro e último mês com dado de IGR no contexto.', N'texto', N'—', NULL, NULL, N'VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )
 VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )'),
-    (42, N'Medida', N'Cor IGR vs Mercado', N'7 UX', N'Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.', N'Compara IGR com IGR Mercado.', N'código de cor', N'—', NULL, N'Use em Formatação condicional → Cor → Valor do campo.', N'IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )'),
+    (42, N'Medida', N'Cor IGR vs Mercado', N'7 UX', N'Cor para formatação condicional: laranja NEXDOM (#FF7F40) se o IGR está acima do mercado, verde Excelência (#045F51) se está abaixo.', N'Compara IGR com IGR Mercado.', N'código de cor', N'—', NULL, N'Use em Formatação condicional → Cor → Valor do campo.', N'IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )'),
     (43, N'Medida', N'Rótulo Fonte', N'7 UX', N'Texto de rodapé com as fontes e a data da última carga do DW.', N'Texto fixo + maior DtCargaDW.', N'texto', N'—', NULL, NULL, N'"Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &
 FORMAT ( MAX ( D_Operadora[DtCargaDW] ), "dd/mm/yyyy" )'),
     (44, N'Conceito', N'Recorte R2 — atual', N'Conceitos', N'Análise do IGR nos 12 meses mais recentes da série vigente (nov/2025 a out/2026). Base dos rankings atuais, outliers e segmentos.', N'DimTempo.SerieIGR = VIGENTE; janela de 12 meses.', NULL, NULL, NULL, N'Não tem TR: a ANS não publica a TR após 2019-10.', NULL),

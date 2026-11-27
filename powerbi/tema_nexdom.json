@@ -1,29 +1,29 @@
 {
-  "name": "NEXDOM ANS — paleta validada",
-  "dataColors": ["#257de0", "#f47230", "#00b894", "#f2a600", "#ee7fac", "#008a17", "#6a4ce2", "#ec4647"],
-  "background": "#ffffff",
-  "foreground": "#191919",
-  "tableAccent": "#257de0",
-  "good": "#257de0",
-  "neutral": "#9c9c9c",
-  "bad": "#f47230",
-  "maximum": "#f47230",
-  "center": "#efefef",
-  "minimum": "#257de0",
+  "name": "NEXDOM ANS — identidade visual NEXDOM",
+  "dataColors": ["#045F51", "#FF7F40", "#1F1645", "#6CCA98", "#8A8590", "#06262D", "#B8B2BA", "#C45A24"],
+  "background": "#FFFFFF",
+  "foreground": "#06262D",
+  "tableAccent": "#045F51",
+  "good": "#045F51",
+  "neutral": "#8A8590",
+  "bad": "#FF7F40",
+  "maximum": "#FF7F40",
+  "center": "#E5E1E6",
+  "minimum": "#045F51",
   "textClasses": {
-    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#191919" },
-    "label": { "fontFace": "Segoe UI", "fontSize": 9, "color": "#666666" },
-    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 24, "color": "#191919" },
-    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 11, "color": "#191919" }
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#06262D" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 9, "color": "#5C5A63" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 24, "color": "#06262D" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 11, "color": "#06262D" }
   },
   "visualStyles": {
     "*": {
       "*": {
-        "background": [{ "show": true, "color": { "solid": { "color": "#ffffff" } } }],
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } } }],
         "border": [{ "show": false }],
-        "valueAxis": [{ "gridlineColor": { "solid": { "color": "#ececec" } }, "gridlineThickness": 1 }]
+        "valueAxis": [{ "gridlineColor": { "solid": { "color": "#ECEAED" } }, "gridlineThickness": 1 }]
       }
     },
-    "page": { "*": { "background": [{ "color": { "solid": { "color": "#f7f7f7" } }, "transparency": 0 }] } }
+    "page": { "*": { "background": [{ "color": { "solid": { "color": "#E5E1E6" } }, "transparency": 0 }] } }
   }
 }

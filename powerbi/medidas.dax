@@ -319,10 +319,10 @@ DEFINE
         VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )
         VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
         RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
-    /// Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.
+    /// Cor para formatação condicional: laranja NEXDOM (#FF7F40) se o IGR está acima do mercado, verde Excelência (#045F51) se está abaixo.
     // pasta: 7 UX | formato: (texto)
     MEASURE Medidas[Cor IGR vs Mercado] =
-        IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
+        IF ( [IGR] > [IGR Mercado], "#FF7F40", "#045F51" )
     /// Texto de rodapé com as fontes e a data da última carga do DW.
     // pasta: 7 UX | formato: (texto)
     MEASURE Medidas[Rótulo Fonte] =
