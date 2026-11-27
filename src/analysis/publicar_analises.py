@@ -54,13 +54,30 @@ def preparar_r1() -> pd.DataFrame:
         "IndiceCombinado": d.IndiceCombinado.round(3), "Quadrante": d.Quadrante})
 
 
+def _forca(rho: float) -> str:
+    a = abs(rho)
+    return "forte" if a >= 0.7 else "moderada" if a >= 0.4 else "fraca" if a >= 0.2 else "muito fraca"
+
+
+def preparar_correlacoes() -> pd.DataFrame:
+    d = pd.read_csv(ANA / "correlacoes.csv")
+    xy = d.Par.str.replace(r"\s*\(.*\)", "", regex=True).str.split(" × ", n=1, expand=True)
+    return pd.DataFrame({
+        "IdCorrelacao": range(1, len(d) + 1), "Recorte": d.Recorte, "Filtro": d.Filtro, "Par": d.Par,
+        "VariavelX": xy[0].str.strip(), "VariavelY": xy[1].str.strip(), "N": d.N,
+        "SpearmanRho": d.Spearman_rho.round(3), "SpearmanP": d.Spearman_p,
+        "PearsonR": d.Pearson_r.round(3), "PearsonP": d.Pearson_p, "TransformacaoPearson": d.Pearson_transf,
+        "Forca": d.Spearman_rho.map(_forca), "Significativo": d.Spearman_p < 0.05})
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", stream=sys.stdout)
     from src.common.db import get_engine
 
     engine = get_engine()
     with engine.begin() as conn:
-        for tabela, df in (("AnaliseR2Operadora", preparar_r2()), ("AnaliseR1Operadora", preparar_r1())):
+        for tabela, df in (("AnaliseR2Operadora", preparar_r2()), ("AnaliseR1Operadora", preparar_r1()),
+                          ("AnaliseCorrelacao", preparar_correlacoes())):
             conn.exec_driver_sql(f"DELETE FROM DW.{tabela}")
             df.to_sql(tabela, conn, schema="DW", if_exists="append", index=False, chunksize=2000)
             n = conn.exec_driver_sql(f"SELECT COUNT(*) FROM DW.{tabela}").scalar_one()

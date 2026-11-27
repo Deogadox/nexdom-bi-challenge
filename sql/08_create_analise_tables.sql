@@ -4,6 +4,7 @@
    para não duplicar a lógica estatística em SQL e DAX.
      DW.AnaliseR2Operadora : IGR atual (12 meses, série vigente) — operadora × cobertura
      DW.AnaliseR1Operadora : IGR × TR (mai/2018–abr/2019) — operadora (cobertura própria do segmento)
+     DW.AnaliseCorrelacao  : correlações de Spearman/Pearson entre porte, reclamações, IGR e TR (tabela desconectada)
    Relacionam-se com DW.DimOperadora (e DimCobertura) no modelo do Power BI.
    ===================================================================================== */
 SET ANSI_NULLS ON;
@@ -58,6 +59,25 @@ CREATE TABLE DW.AnaliseR1Operadora (
     IndiceCombinado    DECIMAL(7,3)   NULL,         -- 0,5 × ScoreIGR + 0,5 × ScoreTR (pesos ajustáveis no DAX)
     Quadrante          NVARCHAR(40)   NULL,
     DtPublicacao       DATETIME2(0)   NOT NULL CONSTRAINT DF_DW_AR1_Dt DEFAULT SYSDATETIME()
+);
+GO
+IF OBJECT_ID(N'DW.AnaliseCorrelacao', N'U') IS NULL
+CREATE TABLE DW.AnaliseCorrelacao (
+    IdCorrelacao       TINYINT        NOT NULL CONSTRAINT PK_DW_AnaliseCorrelacao PRIMARY KEY,
+    Recorte            NVARCHAR(5)    NOT NULL,     -- R1 (2018–19, IGR × TR) | R2 (atual, IGR)
+    Filtro             NVARCHAR(60)   NOT NULL,
+    Par                NVARCHAR(60)   NOT NULL,
+    VariavelX          NVARCHAR(30)   NOT NULL,
+    VariavelY          NVARCHAR(30)   NOT NULL,
+    N                  INT            NOT NULL,
+    SpearmanRho        DECIMAL(6,3)   NOT NULL,
+    SpearmanP          FLOAT          NOT NULL,
+    PearsonR           DECIMAL(6,3)   NOT NULL,
+    PearsonP           FLOAT          NOT NULL,
+    TransformacaoPearson NVARCHAR(20) NOT NULL,     -- log aplicado só às variáveis assimétricas
+    Forca              NVARCHAR(15)   NOT NULL,     -- |ρ| ≥ 0,7 forte · ≥ 0,4 moderada · ≥ 0,2 fraca · < 0,2 muito fraca
+    Significativo      BIT            NOT NULL,     -- p de Spearman < 0,05
+    DtPublicacao       DATETIME2(0)   NOT NULL CONSTRAINT DF_DW_ACor_Dt DEFAULT SYSDATETIME()
 );
 GO
 PRINT N'08_create_analise_tables.sql concluído.';

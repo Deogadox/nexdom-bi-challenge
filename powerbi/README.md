@@ -21,6 +21,7 @@ modelo. Depois, **renomeie a consulta** com o nome da coluna "Consulta no Power 
 | `F_TR` | `DW.FatoTR` | fato | operadora × natureza × mês |
 | `Anl_R2Operadora` | `DW.AnaliseR2Operadora` | resultado estatístico | operadora × cobertura (IGR 12 meses atuais) |
 | `Anl_R1Operadora` | `DW.AnaliseR1Operadora` | resultado estatístico | operadora (IGR × TR, mai/2018–abr/2019) |
+| `Anl_Correlacao` | `DW.AnaliseCorrelacao` | resultado estatístico (sem relacionamentos) | par de variáveis (7 linhas) |
 | `Glossario` | `DW.Glossario` | documentação (sem relacionamentos) | termo (43 medidas + 12 conceitos) |
 
 Convenção: `D_` dimensão · `F_` fato · `Anl_` resultado estatístico. No banco, os nomes seguem o padrão do DW
@@ -65,6 +66,11 @@ SELECT SkOperadora, SkCobertura, GrupoAssistencial, JanelaInicio, JanelaFim, Rec
        ScoreIGR, ScoreTR, IndiceCombinado, Quadrante
 FROM DW.AnaliseR1Operadora;
 
+-- Anl_Correlacao (tabela desconectada: não recebe relacionamentos)
+SELECT Recorte, Filtro, Par, VariavelX, VariavelY, N, SpearmanRho, SpearmanP, PearsonR, PearsonP,
+       TransformacaoPearson, Forca, Significativo
+FROM DW.AnaliseCorrelacao;
+
 -- Glossario (tabela desconectada: não recebe relacionamentos)
 SELECT Ordem, Tipo, Termo, Pasta, Definicao, Calculo, Unidade, Sentido, Observacao, ExpressaoDAX
 FROM DW.Glossario;
@@ -74,7 +80,7 @@ FROM DW.Glossario;
 As consultas já deixam de fora as colunas técnicas e de auditoria (`IdExecucaoDW`, `IGRPublicado`, `VlTRPublicado`,
 `FlIGRDivergente`, `SkTempoBeneficiario`, `DtPublicacao`). No Power Query, confira:
 - `Fl*`, `Elegivel` e `OutlierConsistente` com o tipo **Verdadeiro/Falso**, e `DataMes` com o tipo **Data**;
-- as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742 · `Glossario` 55.
+- as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742 · `Anl_Correlacao` 7 · `Glossario` 55.
 
 **Criação das medidas** (com a tabela `Medidas` e os parâmetros já criados), duas opções geradas do mesmo catálogo:
 - **Uma a uma (recomendado):** [`medidas_uma_a_uma.md`](medidas_uma_a_uma.md), com as 43 medidas na ordem de dependência,
