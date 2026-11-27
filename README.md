@@ -24,7 +24,7 @@ e como os segmentos se comparam.*
 | DW — modelo estrela + orquestração `usp_Pipeline_ANS` | ✅ implementado e validado | contagens e somas ODS = DW ([`pipeline_dw.txt`](docs/evidencias/pipeline_dw.txt)) |
 | Análises estatísticas (5 obrigatórias + concentração) | ✅ implementado e validado | [`docs/resultados_analises.md`](docs/resultados_analises.md), `reports/figures/` |
 | Publicação dos resultados estatísticos no DW | ✅ implementado e validado | `DW.AnaliseR2Operadora` (998) e `DW.AnaliseR1Operadora` (742) |
-| Catálogo semântico: 42 medidas DAX + glossário | ✅ implementado e validado | fonte única → [`powerbi/medidas_uma_a_uma.md`](powerbi/medidas_uma_a_uma.md), [`medidas.dax`](powerbi/medidas.dax), `DW.Glossario` (54 termos), [`docs/glossario.md`](docs/glossario.md) |
+| Catálogo semântico: 43 medidas DAX + glossário | ✅ implementado e validado | fonte única → [`powerbi/medidas_uma_a_uma.md`](powerbi/medidas_uma_a_uma.md), [`medidas.dax`](powerbi/medidas.dax), `DW.Glossario` (55 termos), [`docs/glossario.md`](docs/glossario.md) |
 | Dashboard Power BI | 🟧 parcial | modelo, DAX e layout prontos em [`powerbi/`](powerbi/); o `.pbix` está sendo montado manualmente |
 | Relatório técnico (≤ 5 p.) e insights executivos (≤ 1 p.) | ⬜ planejado | — |
 | Agendamento (SQL Server Agent) e testes de integração com o banco | ⬜ planejado | — |

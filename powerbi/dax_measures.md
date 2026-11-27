@@ -287,6 +287,20 @@ IF (
     )
 )
 
+Ranking Índice (1 = pior) =
+VAR _Val = [Índice Combinado]
+RETURN
+IF (
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+            [Índice Combinado], _Val, ASC, DENSE
+        ),
+        ALLSELECTED ()
+    )
+)
+
 Operadoras Críticas (IGR alto e TR baixa) =
 CALCULATE (
     COUNTROWS ( Anl_R1Operadora ),

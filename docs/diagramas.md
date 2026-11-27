@@ -152,8 +152,8 @@ flowchart TD
     T4[("data/processed/analises/*.csv · resultados.json<br/>reports/figures/*.png · docs/resultados_analises.md")]:::dado
     T5[("DW.AnaliseR2Operadora (IGR atual)<br/>DW.AnaliseR1Operadora (IGR × TR)")]:::dado
 
-    S12["<b>12 · python -m src.semantic.gerar</b><br/><b>+ sql/09_glossario.sql</b><br/>catálogo único → 42 medidas DAX + glossário<br/>testes garantem que não divergem"]:::ok
-    T6[("powerbi/medidas.dax · docs/glossario.md<br/>DW.Glossario (42 medidas + 12 conceitos)")]:::dado
+    S12["<b>12 · python -m src.semantic.gerar</b><br/><b>+ sql/09_glossario.sql</b><br/>catálogo único → 43 medidas DAX + glossário<br/>testes garantem que não divergem"]:::ok
+    T6[("powerbi/medidas.dax · docs/glossario.md<br/>DW.Glossario (43 medidas + 12 conceitos)")]:::dado
 
     S11["<b>11 · Power BI Desktop</b> (montagem manual)<br/>conexão Import em localhost/ANS_BI · schema DW<br/>pronto: modelo, DAX e layout em powerbi/<br/>pendente: arquivo .pbix em construção"]:::parcial
 

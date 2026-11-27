@@ -493,7 +493,28 @@ IF (
 )
 ```
 
-### 37. Operadoras Críticas (IGR alto e TR baixa)
+### 37. Ranking Índice (1 = pior)
+
+- **Pasta:** `6 Estatística` · **Formato:** `0` · **Leitura:** 1 = pior
+- **Descrição:** Posição da operadora pelo Índice Combinado, do menor para o maior índice.
+
+```DAX
+Ranking Índice (1 = pior) =
+VAR _Val = [Índice Combinado]
+RETURN
+IF (
+    HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+            [Índice Combinado], _Val, ASC, DENSE
+        ),
+        ALLSELECTED ()
+    )
+)
+```
+
+### 38. Operadoras Críticas (IGR alto e TR baixa)
 
 - **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
 - **Descrição:** Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).
@@ -506,7 +527,7 @@ CALCULATE (
 )
 ```
 
-### 38. % Operadoras Críticas
+### 39. % Operadoras Críticas
 
 - **Pasta:** `6 Estatística` · **Formato:** `0.0%` · **Leitura:** Maior = pior
 - **Descrição:** Percentual das operadoras elegíveis do recorte 2018–19 no quadrante crítico.
@@ -521,7 +542,7 @@ DIVIDE (
 
 ## Pasta `7 UX`
 
-### 39. Aviso Cobertura
+### 40. Aviso Cobertura
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Mensagem exibida quando mais de uma cobertura está selecionada.
@@ -535,7 +556,7 @@ IF (
 )
 ```
 
-### 40. Texto Período
+### 41. Texto Período
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Período do IGR efetivamente exibido, para títulos dinâmicos.
@@ -547,7 +568,7 @@ VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
 ```
 
-### 41. Cor IGR vs Mercado
+### 42. Cor IGR vs Mercado
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.
@@ -557,7 +578,7 @@ Cor IGR vs Mercado =
 IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
 ```
 
-### 42. Rótulo Fonte
+### 43. Rótulo Fonte
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Texto de rodapé com as fontes e a data da última carga do DW.

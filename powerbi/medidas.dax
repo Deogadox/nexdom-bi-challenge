@@ -274,6 +274,21 @@ DEFINE
                 ALLSELECTED ()
             )
         )
+    /// Posição da operadora pelo Índice Combinado, do menor para o maior índice.
+    // pasta: 6 Estatística | formato: 0
+    MEASURE Medidas[Ranking Índice (1 = pior)] =
+        VAR _Val = [Índice Combinado]
+        RETURN
+        IF (
+            HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
+            CALCULATE (
+                RANKX (
+                    FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+                    [Índice Combinado], _Val, ASC, DENSE
+                ),
+                ALLSELECTED ()
+            )
+        )
     /// Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).
     // pasta: 6 Estatística | formato: #,##0
     MEASURE Medidas[Operadoras Críticas (IGR alto e TR baixa)] =
