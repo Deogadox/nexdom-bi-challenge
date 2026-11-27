@@ -135,9 +135,12 @@ DEFINE
     MEASURE Medidas[Ranking IGR (1 = pior)] =
         IF (
             HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
-            RANKX (
-                FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-                [IGR], , DESC, DENSE
+            CALCULATE (
+                RANKX (
+                    FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+                    [IGR], , DESC, DENSE
+                ),
+                ALLSELECTED ( D_Segmento )
             )
         )
     /// Posição da operadora entre as elegíveis, do menor para o maior IGR.
@@ -145,9 +148,12 @@ DEFINE
     MEASURE Medidas[Ranking IGR (1 = melhor)] =
         IF (
             HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
-            RANKX (
-                FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-                [IGR], , ASC, DENSE
+            CALCULATE (
+                RANKX (
+                    FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+                    [IGR], , ASC, DENSE
+                ),
+                ALLSELECTED ( D_Segmento )
             )
         )
     /// IGR agregado do segmento (modalidade) a que a operadora pertence.
@@ -199,13 +205,19 @@ DEFINE
     /// Participação da operadora (ou do segmento) no total de reclamações selecionado.
     // pasta: 5 Concentração | formato: 0.0%
     MEASURE Medidas[% das Reclamações] =
-        DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ) ) )
+        DIVIDE (
+            [Reclamações],
+            CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ), ALLSELECTED ( D_Segmento ) )
+        )
     /// Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).
     // pasta: 5 Concentração | formato: 0.0%
     MEASURE Medidas[% Acumulado das Reclamações] =
         VAR _Atual = [Reclamações]
         VAR _Tab =
-            ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] )
+            CALCULATETABLE (
+                ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+                ALLSELECTED ( D_Segmento )
+            )
         RETURN
             DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
 
@@ -247,9 +259,12 @@ DEFINE
     MEASURE Medidas[Ranking Índice (1 = melhor)] =
         IF (
             HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
-            RANKX (
-                FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
-                [Índice Combinado], , DESC, DENSE
+            CALCULATE (
+                RANKX (
+                    FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+                    [Índice Combinado], , DESC, DENSE
+                ),
+                ALLSELECTED ( D_Segmento )
             )
         )
     /// Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).

@@ -20,9 +20,9 @@ Cores: **azul `#257de0`** = série principal ou "melhor"; **laranja `#f47230`** 
 |---|---|---|
 | 5 cartões | `[Operadoras com IGR]` · `[IGR]` (rótulo "IGR do mercado") · `[Var % IGR a.a.]` · `[Outliers Críticos (atual)]` · `[% Outliers Críticos]` | No cartão da variação, ícone ▲ laranja / ▼ azul por formatação condicional |
 | 2 cartões de texto | `[Pior Operadora (IGR)]` · `[Melhor Operadora (IGR)]` | Subtítulo: "entre operadoras com ≥ 5 mil beneficiários" |
-| Linha | Eixo `D_Tempo[AnoMes]` (filtro `SerieIGR = VIGENTE`), valor `[IGR]` | Uma série. Linha constante `[IGR Mercado]` em cinza tracejado |
+| Linha | Eixo `D_Tempo[DataMes]` (contínuo; filtro do visual `SerieIGR = VIGENTE`, fora da legenda), valor `[IGR]` | Uma série. Referência opcional: painel Análise → Linha de média |
 | Barras horizontais | `D_Segmento[Segmento]` × `[IGR]`, cor por `[Cor IGR vs Mercado]` | Ordenado por IGR. Tooltip: `[IGR Mediano (operadoras elegíveis)]`, `[Operadoras Elegíveis]` |
-| Tabela Top 10 | `D_Operadora[NomeExibicao]`, `D_Segmento[Segmento]`, `[Beneficiários Médios]`, `[IGR]`, `[Ranking IGR (1 = pior)]` | Filtro do visual: Top N = 10 por `[IGR]`, com `[Operadora Elegível] = 1` |
+| Tabela Top 10 | `D_Operadora[NomeExibicao]`, `D_Segmento[Segmento]`, `[Beneficiários Médios]`, `[IGR]`, `[Ranking IGR (1 = pior)]` | Filtro do visual: `[Ranking IGR (1 = pior)]` menor ou igual a 10 (não usar Top N). Ordenar pelo ranking, crescente. Totais desativados |
 
 **Mensagem esperada (dados reais):** IGR médico de 53,9 nos últimos 12 meses, 20 outliers críticos, as Seguradoras
 com o maior IGR agregado (74,2) e as 10 maiores operadoras concentrando 52% das reclamações.

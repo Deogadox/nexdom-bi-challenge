@@ -262,9 +262,12 @@ MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 
 Ranking IGR (1 = pior) =
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
-    RANKX (
-        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-        [IGR], , DESC, DENSE
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+            [IGR], , DESC, DENSE
+        ),
+        ALLSELECTED ( D_Segmento )
     )
 )
 ```
@@ -278,9 +281,12 @@ IF (
 Ranking IGR (1 = melhor) =
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
-    RANKX (
-        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-        [IGR], , ASC, DENSE
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+            [IGR], , ASC, DENSE
+        ),
+        ALLSELECTED ( D_Segmento )
     )
 )
 ```
@@ -368,7 +374,10 @@ CONCATENATEX (
 
 ```DAX
 % das Reclamações =
-DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ) ) )
+DIVIDE (
+    [Reclamações],
+    CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ), ALLSELECTED ( D_Segmento ) )
+)
 ```
 
 ### 29. % Acumulado das Reclamações
@@ -380,7 +389,10 @@ DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora
 % Acumulado das Reclamações =
 VAR _Atual = [Reclamações]
 VAR _Tab =
-    ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] )
+    CALCULATETABLE (
+        ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+        ALLSELECTED ( D_Segmento )
+    )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
 ```
@@ -458,9 +470,12 @@ RETURN
 Ranking Índice (1 = melhor) =
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
-    RANKX (
-        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
-        [Índice Combinado], , DESC, DENSE
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+            [Índice Combinado], , DESC, DENSE
+        ),
+        ALLSELECTED ( D_Segmento )
     )
 )
 ```

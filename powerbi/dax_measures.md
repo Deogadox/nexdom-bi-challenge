@@ -142,18 +142,24 @@ MEDIANX ( FILTER ( VALUES ( D_Operadora[SkOperadora] ), [Operadora Elegível] = 
 Ranking IGR (1 = pior) =
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
-    RANKX (
-        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-        [IGR], , DESC, DENSE
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+            [IGR], , DESC, DENSE
+        ),
+        ALLSELECTED ( D_Segmento )
     )
 )
 
 Ranking IGR (1 = melhor) =
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && [Operadora Elegível] = 1,
-    RANKX (
-        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
-        [IGR], , ASC, DENSE
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), [Operadora Elegível] = 1 ),
+            [IGR], , ASC, DENSE
+        ),
+        ALLSELECTED ( D_Segmento )
     )
 )
 
@@ -199,6 +205,8 @@ CONCATENATEX (
 - **Elegível:** presente em todos os meses do período e com média ≥ `Benef Mínimo` (padrão 5 mil). Na análise, isso
   removeu taxas instáveis (ex.: uma operadora com 1 beneficiário e IGR 9.100.000) e manteve 99,5% dos beneficiários.
 - Rankings com `ALLSELECTED`: respeitam as segmentações (cobertura, segmento, período) e ignoram a linha do visual.
+  O `CALCULATE ( …, ALLSELECTED ( D_Segmento ) )` faz o mesmo com a coluna `Segmento` quando ela está na tabela:
+  sem ele, cada linha só enxergaria as operadoras do próprio segmento e o ranking viraria "ranking no segmento".
 - `HASONEVALUE ( D_Operadora[NomeExibicao] )`: o ranking só aparece na linha de uma operadora; em totais e
   subtotais fica em branco. **Use `NomeExibicao` como linha dos visuais de ranking**: com outra coluna (ex.: `RazaoSocial`), o ranking fica em branco.
 - `IGR Relativo ao Segmento` acima de 1 = pior que o próprio segmento. Responde "quem destoa do seu segmento".
@@ -209,12 +217,18 @@ CONCATENATEX (
 
 ```DAX
 % das Reclamações =
-DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ) ) )
+DIVIDE (
+    [Reclamações],
+    CALCULATE ( [Reclamações], ALLSELECTED ( D_Operadora ), ALLSELECTED ( D_Segmento ) )
+)
 
 % Acumulado das Reclamações =
 VAR _Atual = [Reclamações]
 VAR _Tab =
-    ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] )
+    CALCULATETABLE (
+        ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+        ALLSELECTED ( D_Segmento )
+    )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
 ```
@@ -253,9 +267,12 @@ RETURN
 Ranking Índice (1 = melhor) =
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
-    RANKX (
-        FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
-        [Índice Combinado], , DESC, DENSE
+    CALCULATE (
+        RANKX (
+            FILTER ( ALLSELECTED ( D_Operadora[NomeExibicao] ), NOT ISBLANK ( [Índice Combinado] ) ),
+            [Índice Combinado], , DESC, DENSE
+        ),
+        ALLSELECTED ( D_Segmento )
     )
 )
 
