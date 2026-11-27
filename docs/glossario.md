@@ -63,7 +63,8 @@ O código DAX de cada medida está em [`powerbi/medidas.dax`](../powerbi/medidas
 | Medida | Definição | Cálculo | Unidade | Leitura | Observação |
 |---|---|---|---|---|---|
 | **% das Reclamações** | Participação da operadora (ou do segmento) no total de reclamações selecionado. | Reclamações ÷ Reclamações de todas as operadoras visíveis. | % | Neutro |  |
-| **% Acumulado das Reclamações** | Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto). | Soma das reclamações das operadoras com volume ≥ ao da linha ÷ total. | % | Neutro | As 10 maiores concentram 52% das reclamações médicas nos últimos 12 meses. |
+| **% das Reclamações (Pareto)** | Participação da operadora no total de reclamações do mercado (todas as operadoras), para as barras do Pareto. | Reclamações ÷ Reclamações de todas as operadoras no período, cobertura e segmento selecionados. | % | Neutro | Ignora o filtro Top N do visual: o total é sempre o do mercado. |
+| **% Acumulado das Reclamações** | Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto). | Soma das reclamações das operadoras com volume ≥ ao da linha ÷ total do mercado. | % | Neutro | Ignora o filtro Top N do visual. Assistência médica, nov/2025–out/2026: 10 operadoras = 51,1%, 20 = 64,0%, 49 = 80%. |
 
 ## 6 Estatística
 

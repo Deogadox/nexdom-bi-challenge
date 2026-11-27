@@ -136,32 +136,33 @@ RETURN
     D_Operadora[NomeExibicao], ", "
 )'),
     (28, N'Medida', N'% das Reclamações', N'5 Concentração', N'Participação da operadora (ou do segmento) no total de reclamações selecionado.', N'Reclamações ÷ Reclamações de todas as operadoras visíveis.', N'%', N'Neutro', N'0.0%', NULL, N'DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )'),
-    (29, N'Medida', N'% Acumulado das Reclamações', N'5 Concentração', N'Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).', N'Soma das reclamações das operadoras com volume ≥ ao da linha ÷ total.', N'%', N'Neutro', N'0.0%', N'As 10 maiores concentram 52% das reclamações médicas nos últimos 12 meses.', N'VAR _Atual = [Reclamações]
+    (29, N'Medida', N'% das Reclamações (Pareto)', N'5 Concentração', N'Participação da operadora no total de reclamações do mercado (todas as operadoras), para as barras do Pareto.', N'Reclamações ÷ Reclamações de todas as operadoras no período, cobertura e segmento selecionados.', N'%', N'Neutro', N'0.0%', N'Ignora o filtro Top N do visual: o total é sempre o do mercado.', N'DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], REMOVEFILTERS ( D_Operadora ) ) )'),
+    (30, N'Medida', N'% Acumulado das Reclamações', N'5 Concentração', N'Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).', N'Soma das reclamações das operadoras com volume ≥ ao da linha ÷ total do mercado.', N'%', N'Neutro', N'0.0%', N'Ignora o filtro Top N do visual. Assistência médica, nov/2025–out/2026: 10 operadoras = 51,1%, 20 = 64,0%, 49 = 80%.', N'VAR _Atual = [Reclamações]
 VAR _Tab =
     CALCULATETABLE (
-        ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-        ALLSELECTED ()
+        ADDCOLUMNS ( VALUES ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+        REMOVEFILTERS ( D_Operadora )
     )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )'),
-    (30, N'Medida', N'Operadoras Elegíveis (R2)', N'6 Estatística', N'Operadoras elegíveis no recorte atual (R2) da análise estatística.', N'Contagem de Anl_R2Operadora com Elegivel = verdadeiro.', N'operadoras', N'Neutro', N'#,##0', N'Janela fixa: nov/2025 a out/2026.', N'CALCULATE ( COUNTROWS ( Anl_R2Operadora ), Anl_R2Operadora[Elegivel] = TRUE () )'),
-    (31, N'Medida', N'Outliers Críticos (atual)', N'6 Estatística', N'Operadoras com IGR estatisticamente acima do esperado e discrepantes no próprio segmento (recorte atual).', N'Contagem com Funil = ''Acima (pior)'' e OutlierConsistente = verdadeiro.', N'operadoras', N'Maior = pior', N'#,##0', N'Funil de Poisson com ajuste de sobredispersão (99,8%) combinado com IQR ou z-score robusto no segmento.', N'CALCULATE (
+    (31, N'Medida', N'Operadoras Elegíveis (R2)', N'6 Estatística', N'Operadoras elegíveis no recorte atual (R2) da análise estatística.', N'Contagem de Anl_R2Operadora com Elegivel = verdadeiro.', N'operadoras', N'Neutro', N'#,##0', N'Janela fixa: nov/2025 a out/2026.', N'CALCULATE ( COUNTROWS ( Anl_R2Operadora ), Anl_R2Operadora[Elegivel] = TRUE () )'),
+    (32, N'Medida', N'Outliers Críticos (atual)', N'6 Estatística', N'Operadoras com IGR estatisticamente acima do esperado e discrepantes no próprio segmento (recorte atual).', N'Contagem com Funil = ''Acima (pior)'' e OutlierConsistente = verdadeiro.', N'operadoras', N'Maior = pior', N'#,##0', N'Funil de Poisson com ajuste de sobredispersão (99,8%) combinado com IQR ou z-score robusto no segmento.', N'CALCULATE (
     COUNTROWS ( Anl_R2Operadora ),
     Anl_R2Operadora[OutlierConsistente] = TRUE (),
     Anl_R2Operadora[Funil] = "Acima (pior)"
 )'),
-    (32, N'Medida', N'% Outliers Críticos', N'6 Estatística', N'Percentual das operadoras elegíveis classificadas como outlier crítico.', N'Outliers Críticos (atual) ÷ Operadoras Elegíveis (R2).', N'%', N'Maior = pior', N'0.0%', NULL, N'DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )'),
-    (33, N'Medida', N'Excesso de Reclamações (atual)', N'6 Estatística', N'Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.', N'Σ reclamações observadas − Σ reclamações esperadas (taxa do mercado × beneficiários), entre as elegíveis.', N'reclamações', N'Maior = pior', N'#,##0', N'Use por operadora ou por segmento. No total geral é sempre 0 (por definição, a taxa de referência é a média das elegíveis). Útil para priorizar onde está o volume ''a mais''.', N'CALCULATE (
+    (33, N'Medida', N'% Outliers Críticos', N'6 Estatística', N'Percentual das operadoras elegíveis classificadas como outlier crítico.', N'Outliers Críticos (atual) ÷ Operadoras Elegíveis (R2).', N'%', N'Maior = pior', N'0.0%', NULL, N'DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )'),
+    (34, N'Medida', N'Excesso de Reclamações (atual)', N'6 Estatística', N'Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.', N'Σ reclamações observadas − Σ reclamações esperadas (taxa do mercado × beneficiários), entre as elegíveis.', N'reclamações', N'Maior = pior', N'#,##0', N'Use por operadora ou por segmento. No total geral é sempre 0 (por definição, a taxa de referência é a média das elegíveis). Útil para priorizar onde está o volume ''a mais''.', N'CALCULATE (
     SUM ( Anl_R2Operadora[Reclamacoes] ) - SUM ( Anl_R2Operadora[Esperado] ),
     Anl_R2Operadora[Elegivel] = TRUE ()
 )'),
-    (34, N'Medida', N'Índice Combinado', N'6 Estatística', N'Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).', N'Peso × ScoreIGR + (1 − Peso) × ScoreTR. Os scores são percentis no grupo assistencial; o ScoreIGR é invertido (menor IGR = nota maior).', N'pontos (0 a 100)', N'Maior = melhor', N'0.0', N'Metodologia do projeto, não indicador oficial da ANS. Ordenação estável entre os pesos 30/70 e 70/30 (Spearman ≥ 0,92).', N'VAR _W = [Peso IGR Valor]
+    (35, N'Medida', N'Índice Combinado', N'6 Estatística', N'Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).', N'Peso × ScoreIGR + (1 − Peso) × ScoreTR. Os scores são percentis no grupo assistencial; o ScoreIGR é invertido (menor IGR = nota maior).', N'pontos (0 a 100)', N'Maior = melhor', N'0.0', N'Metodologia do projeto, não indicador oficial da ANS. Ordenação estável entre os pesos 30/70 e 70/30 (Spearman ≥ 0,92).', N'VAR _W = [Peso IGR Valor]
 RETURN
     AVERAGEX (
         FILTER ( Anl_R1Operadora, Anl_R1Operadora[Elegivel] = TRUE () ),
         _W * Anl_R1Operadora[ScoreIGR] + ( 1 - _W ) * Anl_R1Operadora[ScoreTR]
     )'),
-    (35, N'Medida', N'Ranking Índice (1 = melhor)', N'6 Estatística', N'Posição da operadora pelo Índice Combinado.', N'RANKX denso decrescente entre as operadoras com índice.', N'posição', N'1 = melhor', N'0', N'Leia dentro de um grupo assistencial (filtre médico-hospitalar ou odontológico).', N'VAR _Val = [Índice Combinado]
+    (36, N'Medida', N'Ranking Índice (1 = melhor)', N'6 Estatística', N'Posição da operadora pelo Índice Combinado.', N'RANKX denso decrescente entre as operadoras com índice.', N'posição', N'1 = melhor', N'0', N'Leia dentro de um grupo assistencial (filtre médico-hospitalar ou odontológico).', N'VAR _Val = [Índice Combinado]
 RETURN
 IF (
     HASONEVALUE ( D_Operadora[NomeExibicao] ) && NOT ISBLANK ( [Índice Combinado] ),
@@ -173,38 +174,38 @@ IF (
         ALLSELECTED ()
     )
 )'),
-    (36, N'Medida', N'Operadoras Críticas (IGR alto e TR baixa)', N'6 Estatística', N'Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).', N'Contagem com Quadrante = ''Crítico: IGR alto e TR baixa''.', N'operadoras', N'Maior = pior', N'#,##0', N'49 médico-hospitalares e 3 odontológicas.', N'CALCULATE (
+    (37, N'Medida', N'Operadoras Críticas (IGR alto e TR baixa)', N'6 Estatística', N'Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).', N'Contagem com Quadrante = ''Crítico: IGR alto e TR baixa''.', N'operadoras', N'Maior = pior', N'#,##0', N'49 médico-hospitalares e 3 odontológicas.', N'CALCULATE (
     COUNTROWS ( Anl_R1Operadora ),
     Anl_R1Operadora[Quadrante] = "Crítico: IGR alto e TR baixa"
 )'),
-    (37, N'Medida', N'% Operadoras Críticas', N'6 Estatística', N'Percentual das operadoras elegíveis do recorte 2018–19 no quadrante crítico.', N'Operadoras Críticas ÷ elegíveis em Anl_R1Operadora.', N'%', N'Maior = pior', N'0.0%', NULL, N'DIVIDE (
+    (38, N'Medida', N'% Operadoras Críticas', N'6 Estatística', N'Percentual das operadoras elegíveis do recorte 2018–19 no quadrante crítico.', N'Operadoras Críticas ÷ elegíveis em Anl_R1Operadora.', N'%', N'Maior = pior', N'0.0%', NULL, N'DIVIDE (
     [Operadoras Críticas (IGR alto e TR baixa)],
     CALCULATE ( COUNTROWS ( Anl_R1Operadora ), Anl_R1Operadora[Elegivel] = TRUE () )
 )'),
-    (38, N'Medida', N'Aviso Cobertura', N'7 UX', N'Mensagem exibida quando mais de uma cobertura está selecionada.', N'Texto quando não há exatamente uma cobertura no filtro; vazio caso contrário.', N'texto', N'—', NULL, N'Evita misturar IGR médico e odontológico, que têm escalas cerca de 50 vezes diferentes.', N'IF (
+    (39, N'Medida', N'Aviso Cobertura', N'7 UX', N'Mensagem exibida quando mais de uma cobertura está selecionada.', N'Texto quando não há exatamente uma cobertura no filtro; vazio caso contrário.', N'texto', N'—', NULL, N'Evita misturar IGR médico e odontológico, que têm escalas cerca de 50 vezes diferentes.', N'IF (
     HASONEVALUE ( D_Cobertura[Cobertura] ),
     BLANK (),
     "Selecione uma cobertura: IGR médico e odontológico têm escalas ~50× diferentes"
 )'),
-    (39, N'Medida', N'Texto Período', N'7 UX', N'Período do IGR efetivamente exibido, para títulos dinâmicos.', N'Primeiro e último mês com dado de IGR no contexto.', N'texto', N'—', NULL, NULL, N'VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )
+    (40, N'Medida', N'Texto Período', N'7 UX', N'Período do IGR efetivamente exibido, para títulos dinâmicos.', N'Primeiro e último mês com dado de IGR no contexto.', N'texto', N'—', NULL, NULL, N'VAR _Ini = CALCULATE ( MIN ( D_Tempo[DataMes] ), F_IGR )
 VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )'),
-    (40, N'Medida', N'Cor IGR vs Mercado', N'7 UX', N'Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.', N'Compara IGR com IGR Mercado.', N'código de cor', N'—', NULL, N'Use em Formatação condicional → Cor → Valor do campo.', N'IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )'),
-    (41, N'Medida', N'Rótulo Fonte', N'7 UX', N'Texto de rodapé com as fontes e a data da última carga do DW.', N'Texto fixo + maior DtCargaDW.', N'texto', N'—', NULL, NULL, N'"Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &
+    (41, N'Medida', N'Cor IGR vs Mercado', N'7 UX', N'Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.', N'Compara IGR com IGR Mercado.', N'código de cor', N'—', NULL, N'Use em Formatação condicional → Cor → Valor do campo.', N'IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )'),
+    (42, N'Medida', N'Rótulo Fonte', N'7 UX', N'Texto de rodapé com as fontes e a data da última carga do DW.', N'Texto fixo + maior DtCargaDW.', N'texto', N'—', NULL, NULL, N'"Fonte: ANS — Dados Abertos (CADOP, IGR metodologia 2023, TR). Atualização: " &
 FORMAT ( MAX ( D_Operadora[DtCargaDW] ), "dd/mm/yyyy" )'),
-    (42, N'Conceito', N'Recorte R2 — atual', N'Conceitos', N'Análise do IGR nos 12 meses mais recentes da série vigente (nov/2025 a out/2026). Base dos rankings atuais, outliers e segmentos.', N'DimTempo.SerieIGR = VIGENTE; janela de 12 meses.', NULL, NULL, NULL, N'Não tem TR: a ANS não publica a TR após 2019-10.', NULL),
-    (43, N'Conceito', N'Recorte R1 — IGR × TR', N'Conceitos', N'Análise conjunta de IGR e TR nos 12 meses finais da janela em que as duas bases coexistem (mai/2018 a abr/2019).', N'DimTempo.FlJanelaComumIGRTR = 1.', NULL, NULL, NULL, N'Base do Índice Combinado e do quadrante crítico. Resultado histórico, não atual.', NULL),
-    (44, N'Conceito', N'Série congelada × série vigente do IGR', N'Conceitos', N'O IGR de 2015 a 2019-04 é uma série congelada; a partir de 2021-05, é a série vigente (metodologia 2023).', N'DimTempo.SerieIGR.', NULL, NULL, NULL, N'Os níveis não são comparáveis (≈ 15 contra 30–65 no médico). Não há dados de 2019-05 a 2021-04.', NULL),
-    (45, N'Conceito', N'Cobertura', N'Conceitos', N'Tipo de assistência do IGR: Assistência médica ou Exclusivamente odontológica.', N'DimCobertura.', NULL, NULL, NULL, N'Sempre analisar uma cobertura por vez.', NULL),
-    (46, N'Conceito', N'Natureza da demanda (TR)', N'Conceitos', N'Assistencial (cobertura de procedimentos) ou Não assistencial (contratos, mensalidades, reajustes). ''Geral'' é a soma das duas.', N'DimNatureza; FlTotal = 1 para Geral.', NULL, NULL, NULL, N'Nunca somar Geral com as demais.', NULL),
-    (47, N'Conceito', N'Porte', N'Conceitos', N'Classificação oficial da ANS pelo número de vínculos: Pequeno (< 20 mil), Médio (20 a 100 mil), Grande (> 100 mil).', N'DimPorte, no grão do fato (pode mudar mês a mês e entre coberturas).', NULL, NULL, NULL, NULL, NULL),
-    (48, N'Conceito', N'Segmento / Grupo assistencial', N'Conceitos', N'Segmento = modalidade da operadora no cadastro da ANS (Medicina de Grupo, Cooperativa Médica, Autogestão...). Grupo assistencial = Médico-hospitalar, Odontológico ou Administradora.', N'DimSegmento.', NULL, NULL, NULL, N'As modalidades antigas ''Seguradora'' e ''Administradora'' estão agrupadas nos segmentos atuais (marcadas como legado).', NULL),
-    (49, N'Conceito', N'Elegibilidade (critério)', N'Conceitos', N'Operadora com dado em todos os meses do período e média de pelo menos 5 mil beneficiários (no R1, também ≥ 30 demandas NIP).', N'Medida Operadora Elegível / coluna Elegivel das tabelas de análise.', NULL, NULL, NULL, N'Evita que operadoras minúsculas, com taxas instáveis, dominem rankings.', NULL),
-    (50, N'Conceito', N'Funil de Poisson', N'Conceitos', N'Método que compara a taxa de cada operadora com a do mercado, com limites que se estreitam conforme o porte aumenta.', N'Esperado = taxa do mercado × beneficiários; limites de 99,8% ajustados por sobredispersão (Spiegelhalter, 2005).', NULL, NULL, NULL, N'Classifica em Acima (pior), Dentro ou Abaixo (melhor) do esperado.', NULL),
-    (51, N'Conceito', N'Outlier consistente', N'Conceitos', N'Operadora fora do funil de Poisson e, ao mesmo tempo, discrepante dentro do próprio segmento.', N'Funil fora dos limites E (IQR do segmento OU |z robusto| > 3,5).', NULL, NULL, NULL, N'Dois critérios evitam classificar como problemática uma operadora só por diferença estrutural do segmento.', NULL),
-    (52, N'Conceito', N'Quadrante crítico', N'Conceitos', N'Operadora com IGR acima e TR abaixo das medianas do seu grupo assistencial (recorte R1).', N'Anl_R1Operadora.Quadrante.', NULL, NULL, NULL, N'Uma das duas definições de ''crítica'' do projeto; a outra é o outlier consistente (atual).', NULL),
-    (53, N'Conceito', N'NIP', N'Conceitos', N'Notificação de Intermediação Preliminar: canal da ANS para mediar reclamações entre beneficiário e operadora. Origem dos dados de IGR e TR.', N'—', NULL, NULL, NULL, N'Classificações: Inativa, NP (não procedente), RVE (reparação voluntária e eficaz), Núcleo (encaminhada à fiscalização).', NULL);
+    (43, N'Conceito', N'Recorte R2 — atual', N'Conceitos', N'Análise do IGR nos 12 meses mais recentes da série vigente (nov/2025 a out/2026). Base dos rankings atuais, outliers e segmentos.', N'DimTempo.SerieIGR = VIGENTE; janela de 12 meses.', NULL, NULL, NULL, N'Não tem TR: a ANS não publica a TR após 2019-10.', NULL),
+    (44, N'Conceito', N'Recorte R1 — IGR × TR', N'Conceitos', N'Análise conjunta de IGR e TR nos 12 meses finais da janela em que as duas bases coexistem (mai/2018 a abr/2019).', N'DimTempo.FlJanelaComumIGRTR = 1.', NULL, NULL, NULL, N'Base do Índice Combinado e do quadrante crítico. Resultado histórico, não atual.', NULL),
+    (45, N'Conceito', N'Série congelada × série vigente do IGR', N'Conceitos', N'O IGR de 2015 a 2019-04 é uma série congelada; a partir de 2021-05, é a série vigente (metodologia 2023).', N'DimTempo.SerieIGR.', NULL, NULL, NULL, N'Os níveis não são comparáveis (≈ 15 contra 30–65 no médico). Não há dados de 2019-05 a 2021-04.', NULL),
+    (46, N'Conceito', N'Cobertura', N'Conceitos', N'Tipo de assistência do IGR: Assistência médica ou Exclusivamente odontológica.', N'DimCobertura.', NULL, NULL, NULL, N'Sempre analisar uma cobertura por vez.', NULL),
+    (47, N'Conceito', N'Natureza da demanda (TR)', N'Conceitos', N'Assistencial (cobertura de procedimentos) ou Não assistencial (contratos, mensalidades, reajustes). ''Geral'' é a soma das duas.', N'DimNatureza; FlTotal = 1 para Geral.', NULL, NULL, NULL, N'Nunca somar Geral com as demais.', NULL),
+    (48, N'Conceito', N'Porte', N'Conceitos', N'Classificação oficial da ANS pelo número de vínculos: Pequeno (< 20 mil), Médio (20 a 100 mil), Grande (> 100 mil).', N'DimPorte, no grão do fato (pode mudar mês a mês e entre coberturas).', NULL, NULL, NULL, NULL, NULL),
+    (49, N'Conceito', N'Segmento / Grupo assistencial', N'Conceitos', N'Segmento = modalidade da operadora no cadastro da ANS (Medicina de Grupo, Cooperativa Médica, Autogestão...). Grupo assistencial = Médico-hospitalar, Odontológico ou Administradora.', N'DimSegmento.', NULL, NULL, NULL, N'As modalidades antigas ''Seguradora'' e ''Administradora'' estão agrupadas nos segmentos atuais (marcadas como legado).', NULL),
+    (50, N'Conceito', N'Elegibilidade (critério)', N'Conceitos', N'Operadora com dado em todos os meses do período e média de pelo menos 5 mil beneficiários (no R1, também ≥ 30 demandas NIP).', N'Medida Operadora Elegível / coluna Elegivel das tabelas de análise.', NULL, NULL, NULL, N'Evita que operadoras minúsculas, com taxas instáveis, dominem rankings.', NULL),
+    (51, N'Conceito', N'Funil de Poisson', N'Conceitos', N'Método que compara a taxa de cada operadora com a do mercado, com limites que se estreitam conforme o porte aumenta.', N'Esperado = taxa do mercado × beneficiários; limites de 99,8% ajustados por sobredispersão (Spiegelhalter, 2005).', NULL, NULL, NULL, N'Classifica em Acima (pior), Dentro ou Abaixo (melhor) do esperado.', NULL),
+    (52, N'Conceito', N'Outlier consistente', N'Conceitos', N'Operadora fora do funil de Poisson e, ao mesmo tempo, discrepante dentro do próprio segmento.', N'Funil fora dos limites E (IQR do segmento OU |z robusto| > 3,5).', NULL, NULL, NULL, N'Dois critérios evitam classificar como problemática uma operadora só por diferença estrutural do segmento.', NULL),
+    (53, N'Conceito', N'Quadrante crítico', N'Conceitos', N'Operadora com IGR acima e TR abaixo das medianas do seu grupo assistencial (recorte R1).', N'Anl_R1Operadora.Quadrante.', NULL, NULL, NULL, N'Uma das duas definições de ''crítica'' do projeto; a outra é o outlier consistente (atual).', NULL),
+    (54, N'Conceito', N'NIP', N'Conceitos', N'Notificação de Intermediação Preliminar: canal da ANS para mediar reclamações entre beneficiário e operadora. Origem dos dados de IGR e TR.', N'—', NULL, NULL, NULL, N'Classificações: Inativa, NP (não procedente), RVE (reparação voluntária e eficaz), Núcleo (encaminhada à fiscalização).', NULL);
 COMMIT;
 GO
 SELECT Tipo, COUNT(*) AS Termos FROM DW.Glossario GROUP BY Tipo;
-PRINT N'09_glossario.sql concluído: 41 medidas e 12 conceitos.';
+PRINT N'09_glossario.sql concluído: 42 medidas e 12 conceitos.';

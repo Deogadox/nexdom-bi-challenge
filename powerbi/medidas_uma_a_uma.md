@@ -381,7 +381,17 @@ CONCATENATEX (
 DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )
 ```
 
-### 29. % Acumulado das Reclamações
+### 29. % das Reclamações (Pareto)
+
+- **Pasta:** `5 Concentração` · **Formato:** `0.0%` · **Leitura:** Neutro
+- **Descrição:** Participação da operadora no total de reclamações do mercado (todas as operadoras), para as barras do Pareto.
+
+```DAX
+% das Reclamações (Pareto) =
+DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], REMOVEFILTERS ( D_Operadora ) ) )
+```
+
+### 30. % Acumulado das Reclamações
 
 - **Pasta:** `5 Concentração` · **Formato:** `0.0%` · **Leitura:** Neutro
 - **Descrição:** Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).
@@ -391,8 +401,8 @@ DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )
 VAR _Atual = [Reclamações]
 VAR _Tab =
     CALCULATETABLE (
-        ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-        ALLSELECTED ()
+        ADDCOLUMNS ( VALUES ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+        REMOVEFILTERS ( D_Operadora )
     )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
@@ -400,7 +410,7 @@ RETURN
 
 ## Pasta `6 Estatística`
 
-### 30. Operadoras Elegíveis (R2)
+### 31. Operadoras Elegíveis (R2)
 
 - **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Neutro
 - **Descrição:** Operadoras elegíveis no recorte atual (R2) da análise estatística.
@@ -410,7 +420,7 @@ Operadoras Elegíveis (R2) =
 CALCULATE ( COUNTROWS ( Anl_R2Operadora ), Anl_R2Operadora[Elegivel] = TRUE () )
 ```
 
-### 31. Outliers Críticos (atual)
+### 32. Outliers Críticos (atual)
 
 - **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
 - **Descrição:** Operadoras com IGR estatisticamente acima do esperado e discrepantes no próprio segmento (recorte atual).
@@ -424,7 +434,7 @@ CALCULATE (
 )
 ```
 
-### 32. % Outliers Críticos
+### 33. % Outliers Críticos
 
 - **Pasta:** `6 Estatística` · **Formato:** `0.0%` · **Leitura:** Maior = pior
 - **Descrição:** Percentual das operadoras elegíveis classificadas como outlier crítico.
@@ -434,7 +444,7 @@ CALCULATE (
 DIVIDE ( [Outliers Críticos (atual)], [Operadoras Elegíveis (R2)] )
 ```
 
-### 33. Excesso de Reclamações (atual)
+### 34. Excesso de Reclamações (atual)
 
 - **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
 - **Descrição:** Reclamações acima (ou abaixo, se negativo) do que seria esperado se a operadora tivesse o IGR do mercado.
@@ -447,7 +457,7 @@ CALCULATE (
 )
 ```
 
-### 34. Índice Combinado
+### 35. Índice Combinado
 
 - **Pasta:** `6 Estatística` · **Formato:** `0.0` · **Leitura:** Maior = melhor
 - **Descrição:** Indicador do projeto que combina IGR e TR numa nota de 0 a 100 (recorte 2018–19).
@@ -462,7 +472,7 @@ RETURN
     )
 ```
 
-### 35. Ranking Índice (1 = melhor)
+### 36. Ranking Índice (1 = melhor)
 
 - **Pasta:** `6 Estatística` · **Formato:** `0` · **Leitura:** 1 = melhor
 - **Descrição:** Posição da operadora pelo Índice Combinado.
@@ -483,7 +493,7 @@ IF (
 )
 ```
 
-### 36. Operadoras Críticas (IGR alto e TR baixa)
+### 37. Operadoras Críticas (IGR alto e TR baixa)
 
 - **Pasta:** `6 Estatística` · **Formato:** `#,##0` · **Leitura:** Maior = pior
 - **Descrição:** Operadoras com IGR acima da mediana e TR abaixo da mediana do grupo (recorte 2018–19).
@@ -496,7 +506,7 @@ CALCULATE (
 )
 ```
 
-### 37. % Operadoras Críticas
+### 38. % Operadoras Críticas
 
 - **Pasta:** `6 Estatística` · **Formato:** `0.0%` · **Leitura:** Maior = pior
 - **Descrição:** Percentual das operadoras elegíveis do recorte 2018–19 no quadrante crítico.
@@ -511,7 +521,7 @@ DIVIDE (
 
 ## Pasta `7 UX`
 
-### 38. Aviso Cobertura
+### 39. Aviso Cobertura
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Mensagem exibida quando mais de uma cobertura está selecionada.
@@ -525,7 +535,7 @@ IF (
 )
 ```
 
-### 39. Texto Período
+### 40. Texto Período
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Período do IGR efetivamente exibido, para títulos dinâmicos.
@@ -537,7 +547,7 @@ VAR _Fim = CALCULATE ( MAX ( D_Tempo[DataMes] ), F_IGR )
 RETURN "IGR de " & FORMAT ( _Ini, "mmm/yyyy" ) & " a " & FORMAT ( _Fim, "mmm/yyyy" )
 ```
 
-### 40. Cor IGR vs Mercado
+### 41. Cor IGR vs Mercado
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Cor para formatação condicional: laranja se o IGR está acima do mercado, azul se está abaixo.
@@ -547,7 +557,7 @@ Cor IGR vs Mercado =
 IF ( [IGR] > [IGR Mercado], "#f47230", "#257de0" )
 ```
 
-### 41. Rótulo Fonte
+### 42. Rótulo Fonte
 
 - **Pasta:** `7 UX` · **Formato:** `Texto` · **Leitura:** —
 - **Descrição:** Texto de rodapé com as fontes e a data da última carga do DW.

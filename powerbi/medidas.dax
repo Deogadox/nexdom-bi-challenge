@@ -210,14 +210,18 @@ DEFINE
     // pasta: 5 Concentração | formato: 0.0%
     MEASURE Medidas[% das Reclamações] =
         DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )
+    /// Participação da operadora no total de reclamações do mercado (todas as operadoras), para as barras do Pareto.
+    // pasta: 5 Concentração | formato: 0.0%
+    MEASURE Medidas[% das Reclamações (Pareto)] =
+        DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], REMOVEFILTERS ( D_Operadora ) ) )
     /// Percentual acumulado das reclamações, da operadora com mais reclamações para a com menos (curva de Pareto).
     // pasta: 5 Concentração | formato: 0.0%
     MEASURE Medidas[% Acumulado das Reclamações] =
         VAR _Atual = [Reclamações]
         VAR _Tab =
             CALCULATETABLE (
-                ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-                ALLSELECTED ()
+                ADDCOLUMNS ( VALUES ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+                REMOVEFILTERS ( D_Operadora )
             )
         RETURN
             DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )

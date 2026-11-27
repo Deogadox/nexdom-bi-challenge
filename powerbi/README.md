@@ -21,7 +21,7 @@ modelo. Depois, **renomeie a consulta** com o nome da coluna "Consulta no Power 
 | `F_TR` | `DW.FatoTR` | fato | operadora × natureza × mês |
 | `Anl_R2Operadora` | `DW.AnaliseR2Operadora` | resultado estatístico | operadora × cobertura (IGR 12 meses atuais) |
 | `Anl_R1Operadora` | `DW.AnaliseR1Operadora` | resultado estatístico | operadora (IGR × TR, mai/2018–abr/2019) |
-| `Glossario` | `DW.Glossario` | documentação (sem relacionamentos) | termo (41 medidas + 12 conceitos) |
+| `Glossario` | `DW.Glossario` | documentação (sem relacionamentos) | termo (42 medidas + 12 conceitos) |
 
 Convenção: `D_` dimensão · `F_` fato · `Anl_` resultado estatístico. No banco, os nomes seguem o padrão do DW
 (`Dim`, `Fato`, `Analise`).
@@ -74,10 +74,10 @@ FROM DW.Glossario;
 As consultas já deixam de fora as colunas técnicas e de auditoria (`IdExecucaoDW`, `IGRPublicado`, `VlTRPublicado`,
 `FlIGRDivergente`, `SkTempoBeneficiario`, `DtPublicacao`). No Power Query, confira:
 - `Fl*`, `Elegivel` e `OutlierConsistente` com o tipo **Verdadeiro/Falso**, e `DataMes` com o tipo **Data**;
-- as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742 · `Glossario` 53.
+- as contagens: `F_IGR` 130.136 · `F_TR` 63.366 · `D_Operadora` 4.187 · `Anl_R2Operadora` 998 · `Anl_R1Operadora` 742 · `Glossario` 54.
 
 **Criação das medidas** (com a tabela `Medidas` e os parâmetros já criados), duas opções geradas do mesmo catálogo:
-- **Uma a uma (recomendado):** [`medidas_uma_a_uma.md`](medidas_uma_a_uma.md), com as 41 medidas na ordem de dependência,
+- **Uma a uma (recomendado):** [`medidas_uma_a_uma.md`](medidas_uma_a_uma.md), com as 42 medidas na ordem de dependência,
   cada uma com código, pasta, formato e descrição.
 - **Todas de uma vez:** [`medidas.dax`](medidas.dax) na Exibição de consulta DAX → link **Atualizar modelo** acima de `DEFINE`.
 

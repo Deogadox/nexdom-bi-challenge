@@ -224,17 +224,24 @@ CONCATENATEX (
 % das Reclamações =
 DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], ALLSELECTED () ) )
 
+% das Reclamações (Pareto) =
+DIVIDE ( [Reclamações], CALCULATE ( [Reclamações], REMOVEFILTERS ( D_Operadora ) ) )
+
 % Acumulado das Reclamações =
 VAR _Atual = [Reclamações]
 VAR _Tab =
     CALCULATETABLE (
-        ADDCOLUMNS ( ALLSELECTED ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
-        ALLSELECTED ()
+        ADDCOLUMNS ( VALUES ( D_Operadora[NomeExibicao] ), "@Rec", [Reclamações] ),
+        REMOVEFILTERS ( D_Operadora )
     )
 RETURN
     DIVIDE ( SUMX ( FILTER ( _Tab, [@Rec] >= _Atual ), [@Rec] ), SUMX ( _Tab, [@Rec] ) )
 ```
-- Gráfico de Pareto. Na análise, as 10 maiores concentram 52% das reclamações e 40,5% dos beneficiários.
+- **Pareto** (gráfico de colunas e linhas, um eixo só, em %): colunas `[% das Reclamações (Pareto)]`, linha
+  `[% Acumulado das Reclamações]`, eixo `NomeExibicao` ordenado por `[Reclamações]` desc, filtro Top N = 20 por `[Reclamações]`.
+  As duas medidas usam `REMOVEFILTERS ( D_Operadora )`: o Top N corta as barras, mas o total continua sendo o do mercado
+  (com `ALLSELECTED` a linha chegaria artificialmente a 100% na 20ª operadora).
+- Assistência médica, nov/2025–out/2026: 10 operadoras = 51,1% · 20 = 64,0% · 49 (7,2% das 679) = 80%.
 
 ## 6. Resultados estatísticos  (pasta `6 Estatística`, tabelas `Anl_R2Operadora` / `Anl_R1Operadora`)
 
